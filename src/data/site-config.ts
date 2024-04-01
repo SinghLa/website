@@ -43,7 +43,7 @@ const siteConfig: SiteConfig = {
     description: 'PhD student at LSE in the Dept. of Economics',
     image: {
         src: '/lachi-portrait.jpeg',
-        alt: 'Lachi Singh'
+        alt: 'Portrait of Lachi Singh'
     },
     headerNavLinks: [
         {
