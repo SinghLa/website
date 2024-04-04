@@ -1,5 +1,6 @@
 ---
 import type { ProjectEntry } from '../utils/data-utils';
+import Abstract from './Abstract';
 import Coauthor from './Coauthor.astro';
 
 type Props = { project: ProjectEntry };
@@ -25,5 +26,5 @@ const { title, abstract, coauthors } = project.data;
             </p>
         )
     }
-    {abstract && <div class="mt-2 text-sm leading-normal text-justify">{abstract}</div>}
+    <Abstract client:load abstract={abstract} />
 </div>
