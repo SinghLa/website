@@ -29,6 +29,13 @@ const workInProgress = defineCollection({
                 link: z.string().url().optional()
             })
         ),
+        funding: z
+            .array(
+                z.object({
+                    name: z.string()
+                })
+            )
+            .optional(),
         draft: z.boolean()
     })
 });
@@ -43,6 +50,13 @@ const workingPaper = defineCollection({
                 link: z.string().url().optional()
             })
         ),
+        funding: z
+            .array(
+                z.object({
+                    name: z.string()
+                })
+            )
+            .optional(),
         draft: z.boolean()
     })
 });
@@ -57,6 +71,13 @@ const published = defineCollection({
                 link: z.string().url().optional()
             })
         ),
+        funding: z
+            .array(
+                z.object({
+                    name: z.string()
+                })
+            )
+            .optional(),
         draft: z.boolean()
     })
 });
