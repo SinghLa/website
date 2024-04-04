@@ -1,0 +1,40 @@
+---
+import ProjectItem from '../../components/ProjectItem.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllProjects } from '../../utils/data-utils';
+
+const { published, workingPaper, workInProgress } = await getAllProjects();
+---
+
+<BaseLayout title="Projects" description="All the projects I am working on" image={{ src: '/lachi-portrait.jpeg', alt: 'Lachi Singh' }} showHeader={false}>
+    {
+        published.length > 0 && (
+            <div>
+                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Publications</h1>
+                {published.map((project) => (
+                    <ProjectItem project={project} />
+                ))}
+            </div>
+        )
+    }
+    {
+        workingPaper.length > 0 && (
+            <div>
+                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Working Papers</h1>
+                {workingPaper.map((project) => (
+                    <ProjectItem project={project} />
+                ))}
+            </div>
+        )
+    }
+    {
+        workInProgress.length > 0 && (
+            <div>
+                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Work In Progress</h1>
+                {workInProgress.map((project) => (
+                    <ProjectItem project={project} />
+                ))}
+            </div>
+        )
+    }
+</BaseLayout>

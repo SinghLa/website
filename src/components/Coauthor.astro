@@ -1,0 +1,22 @@
+---
+type Props = {
+    coauthor: {
+        name: string;
+        link?: string;
+    };
+};
+
+const {
+    coauthor: { name, link }
+} = Astro.props;
+---
+
+{
+    link ? (
+        <a href={link} class="hover:underline" target="_blank" referrerpolicy="no-referrer">
+            <span class="text-sm">{name}</span>
+        </a>
+    ) : (
+        <span class="text-sm">{name}</span>
+    )
+}

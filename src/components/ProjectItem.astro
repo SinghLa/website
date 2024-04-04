@@ -1,0 +1,29 @@
+---
+import type { ProjectEntry } from '../utils/data-utils';
+import Coauthor from './Coauthor.astro';
+
+type Props = { project: ProjectEntry };
+
+const { project } = Astro.props;
+const { title, abstract, coauthors } = project.data;
+---
+
+<div>
+    <h2
+        class="text-xl leading-tight font-serif font-medium group-hover:underline group-hover:decoration-dashed group-hover:underline-offset-4
+        group-hover:decoration-1 sm:text-2xl"
+    >
+        {title}
+    </h2>
+    {
+        coauthors.length > 0 && (
+            <p class="text-sm italic">
+                with{' '}
+                {coauthors.map((ca) => (
+                    <Coauthor coauthor={ca} />
+                ))}
+            </p>
+        )
+    }
+    {abstract && <div class="mt-2 text-sm leading-normal text-justify">{abstract}</div>}
+</div>

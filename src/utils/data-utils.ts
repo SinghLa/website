@@ -1,25 +1,15 @@
-import { type CollectionEntry } from 'astro:content';
-import { slugify } from './common-utils';
+import { getCollection, type CollectionEntry } from 'astro:content';
 
-export function sortItemsByDateDesc(itemA: CollectionEntry<'blog' | 'projects'>, itemB: CollectionEntry<'blog' | 'projects'>) {
-    return new Date(itemB.data.publishDate).getTime() - new Date(itemA.data.publishDate).getTime();
-}
+export type ProjectEntry = CollectionEntry<'published'> | CollectionEntry<'workingPaper'> | CollectionEntry<'workInProgress'>;
 
-export function getAllTags(posts: CollectionEntry<'blog'>[]) {
-    const tags: string[] = [...new Set(posts.flatMap((post) => post.data.tags || []).filter(Boolean))];
-    return tags
-        .map((tag) => {
-            return {
-                name: tag,
-                slug: slugify(tag)
-            };
-        })
-        .filter((obj, pos, arr) => {
-            return arr.map((mapObj) => mapObj.slug).indexOf(obj.slug) === pos;
-        });
-}
+export async function getAllProjects() {
+    const workInProgress = await getCollection('workInProgress');
+    const workingPaper = await getCollection('workingPaper');
+    const published = await getCollection('published');
 
-export function getPostsByTag(posts: CollectionEntry<'blog'>[], tagSlug: string) {
-    const filteredPosts: CollectionEntry<'blog'>[] = posts.filter((post) => (post.data.tags || []).map((tag) => slugify(tag)).includes(tagSlug));
-    return filteredPosts;
+    return {
+        workInProgress: workInProgress.filter((p) => !p.data.draft),
+        workingPaper: workingPaper.filter((p) => !p.data.draft),
+        published: published.filter((p) => !p.data.draft)
+    };
 }
