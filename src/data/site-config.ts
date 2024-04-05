@@ -75,7 +75,7 @@ const siteConfig: SiteConfig = {
         }
     ],
     hero: {
-        text: 'I am a PhD candidate in the Department of Economics. My main fields of interest are development economics, labour ecnonomics, and environmental economics. Originally from India, I hold a BA. (Hons.) in Economics from Miranda House (University of Delhi) and an MA in International and Development Economics from Yale University. I was previously a pre-doctoral fellow at Tobin Centre for Economic Policy at Yale University.',
+        text: 'I am a PhD candidate in the Department of Economics. My main fields of interest are development, labour, and environmental economics. Originally from India, I hold a BA. (Hons.) in Economics from Miranda House (University of Delhi) and an MA in International and Development Economics from Yale University. I was previously a pre-doctoral fellow at Tobin Centre for Economic Policy at Yale University.',
         image: {
             src: '/lachi-portrait.jpeg',
             alt: 'Lachi Singh'
