@@ -6,7 +6,7 @@ import Coauthor from './Coauthor.astro';
 type Props = { project: ProjectEntry };
 
 const { project } = Astro.props;
-const { title, abstract, coauthors } = project.data;
+const { title, abstract, coauthors, funding } = project.data;
 ---
 
 <div>
@@ -24,6 +24,17 @@ const { title, abstract, coauthors } = project.data;
                     <Coauthor coauthor={ca} />
                 ))}
             </p>
+        )
+    }
+    {
+        funding && funding.length > 0 && (
+            <ul class="py-2">
+                {funding.map((funder) => (
+                    <li>
+                        <p class="text-sm italic">{funder.name}</p>
+                    </li>
+                ))}
+            </ul>
         )
     }
     <Abstract client:load abstract={abstract} />
