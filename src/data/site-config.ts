@@ -82,6 +82,10 @@ const siteConfig: SiteConfig = {
             {
                 text: 'Get in Touch',
                 href: '/contact'
+            },
+            {
+                text: "CV",
+                href: "https://www.dropbox.com/scl/fi/brwi7in5po21netqaroai/LachiSingh_CV.pdf?rlkey=64pqoypxjcw80tuxm4wiiztip&st=nu2gw81t&dl=0"
             }
         ]
     },
