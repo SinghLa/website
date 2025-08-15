@@ -58,8 +58,8 @@ const siteConfig: SiteConfig = {
             href: '/teaching'
         },
         {
-            text: 'Contact',
-            href: '/contact'
+            text: 'CV',
+            href: 'https://www.dropbox.com/scl/fi/brwi7in5po21netqaroai/LachiSingh_CV.pdf?rlkey=64pqoypxjcw80tuxm4wiiztip&st=nu2gw81t&dl=0'
         }
     ],
     footerNavLinks: [],
@@ -80,8 +80,12 @@ const siteConfig: SiteConfig = {
         },
         actions: [
             {
-                text: 'Get in Touch',
-                href: '/contact'
+                text: 'Email',
+                href: 'mailto:l.singh7@lse.ac.uk'
+            },
+            {
+                text: 'LinkedIn',
+                href: 'https://www.linkedin.com/in/lachi-singh/'
             },
             {
                 text: "CV",

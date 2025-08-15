@@ -22,7 +22,7 @@ const pages = defineCollection({
 const workInProgress = defineCollection({
     schema: z.object({
         title: z.string(),
-        abstract: z.string(),
+        abstract: z.string().optional(),
         coauthors: z.array(
             z.object({
                 name: z.string(),

@@ -7,8 +7,13 @@ const { href, class: className, ...props } = Astro.props;
 
 const { pathname } = Astro.url;
 const isActive = href === pathname || href === pathname.replace(/\/$/, '');
+
+const hrefString = typeof href === 'string' ? href : href?.toString() || '';
+const isExternal = hrefString.startsWith('http://') || hrefString.startsWith('https://');
+
+const externalProps = isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 
-<a class:list={[className, { 'underline underline-offset-2 decoration-1': isActive }]} href={href} {...props}>
+<a class:list={[className, { 'underline underline-offset-2 decoration-1': isActive }]} href={href} {...externalProps} {...props}>
     <slot />
 </a>

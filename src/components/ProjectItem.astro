@@ -37,5 +37,5 @@ const { title, abstract, coauthors, funding } = project.data;
             </ul>
         )
     }
-    <Abstract client:load abstract={abstract} />
+    {abstract && <Abstract client:load abstract={abstract} />}
 </div>
