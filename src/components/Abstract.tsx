@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Markdown from "react-markdown"
 
 export type Props = {
     abstract: string;
@@ -10,10 +11,10 @@ export default function Abstract({ abstract }: Props) {
     if (!expanded) {
         return (
             <>
-                <div className="mt-2 text-sm leading-normal text-justify line-clamp-3">
-                    <p>{abstract}</p>
+                <div className="mt-2 text-sm leading-normal text-justify line-clamp-3 prose prose-dante dark:prose-dark max-w-none">
+                  <Markdown>{abstract}</Markdown>
                 </div>
-                <button className="underline text-sm leading-normal" onClick={() => setExpanded(true)}>
+                <button className="underline text-sm leading-normal mt-4 italic" onClick={() => setExpanded(true)}>
                     Expand
                 </button>
             </>
@@ -22,10 +23,10 @@ export default function Abstract({ abstract }: Props) {
 
     return (
         <>
-            <div className="mt-2 text-sm leading-normal text-justify">
-                <p>{abstract}</p>
+            <div className="mt-2 text-sm leading-normal text-justify prose prose-dante dark:prose-dark max-w-none">
+              <Markdown>{abstract}</Markdown>
             </div>
-            <button className="underline text-sm leading-normal" onClick={() => setExpanded(false)}>
+            <button className="underline text-sm leading-normal mt-4 italic" onClick={() => setExpanded(false)}>
                 Collapse
             </button>
         </>

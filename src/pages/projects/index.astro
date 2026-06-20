@@ -37,7 +37,7 @@ const { published, workingPaper, workInProgress } = await getAllProjects();
     }
     {
         workInProgress.length > 0 && (
-            <div>
+            <div class="mt-16">
                 <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Work In Progress</h1>
                 <ul class="flex flex-col gap-8">
                     {workInProgress.map((project) => (
