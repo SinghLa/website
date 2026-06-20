@@ -57,6 +57,10 @@ const workingPaper = defineCollection({
                 })
             )
             .optional(),
+        links: z.array(z.object({
+            title: z.string(),
+            link: z.string().url(),
+        })).optional(),
         draft: z.boolean()
     })
 });
