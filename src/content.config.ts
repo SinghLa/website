@@ -27,19 +27,8 @@ const workInProgress = defineCollection({
     schema: z.object({
         title: z.string(),
         abstract: z.string().optional(),
-        coauthors: z.array(
-            z.object({
-                name: z.string(),
-                link: z.url().optional()
-            })
-        ),
-        funding: z
-            .array(
-                z.object({
-                    name: z.string()
-                })
-            )
-            .optional(),
+        coauthors: z.string().optional(),
+        funding: z.string().optional(),
         note: z.string().optional(),
         draft: z.boolean()
     })
@@ -50,23 +39,9 @@ const workingPaper = defineCollection({
     schema: z.object({
         title: z.string(),
         abstract: z.string(),
-        coauthors: z.array(
-            z.object({
-                name: z.string(),
-                link: z.url().optional()
-            })
-        ),
-        funding: z
-            .array(
-                z.object({
-                    name: z.string()
-                })
-            )
-            .optional(),
-        links: z.array(z.object({
-            title: z.string(),
-            link: z.url(),
-        })).optional(),
+        coauthors: z.string().optional(),
+        funding: z.string().optional(),
+        links: z.string().optional(),
         note: z.string().optional(),
         draft: z.boolean()
     })
@@ -77,19 +52,8 @@ const published = defineCollection({
     schema: z.object({
         title: z.string(),
         abstract: z.string(),
-        coauthors: z.array(
-            z.object({
-                name: z.string(),
-                link: z.url().optional()
-            })
-        ),
-        funding: z
-            .array(
-                z.object({
-                    name: z.string()
-                })
-            )
-            .optional(),
+        coauthors: z.string().optional(),
+        funding: z.string().optional(),
         note: z.string().optional(),
         draft: z.boolean()
     })

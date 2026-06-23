@@ -2,10 +2,7 @@
 title: 'Weathering the Waste: Inventory Choice, Market Aggregation and Food Loss Among Urban Street Vendors'
 abstract: |
   Do decentralized markets efficiently aggregate supply decisions when firms must commit inventory under correlated uncertainty? We study street vendors selling perishable produce in Patna, India, who first commit to inventory at wholesale markets then set retail prices during the trading day. Demand uncertainty is driven by weather and marketplace-day footfall affecting all vendors simultaneously. Waste from spoilage provides a direct measure of costly supply mistakes. We develop a two-stage model identifying three inefficiency channels: business-stealing through prices, availability externalities through stockout spillovers, and coordination failure under correlated shocks. We show correlated uncertainty amplifies competitive inefficiency: safety-stock wedges scale with total uncertainty, and common shocks create non-diversifiable market volatility. Our empirical strategy combines vendor-level panel data with randomized price experiments. We test whether vendors optimize individually and whether markets achieve efficient aggregation, classifying behaviour into scenarios based on individual versus market efficiency. The analysis will establish whether inefficiency arises from individual mistakes (learning errors, biases) or market failures (strategic competition, coordination), a distinction critical for policy, since if markets exhibit individual efficiency with market inefficiency, improving individual forecasting cannot address strategic externalities. The findings inform intervention design in committed-supply markets facing growing demand volatility from climate change.
-funding:
-  - name: supported by Global Sustainability Research Fund (LSE) and IGC
-coauthors:
-  - name: Swati Dhingra
-    link: 'https://www.sdhingra.com/'
+funding: supported by Global Sustainability Research Fund (LSE) and IGC
+coauthors: '[Swati Dhingra](https://www.sdhingra.com/)'
 draft: false
 ---
