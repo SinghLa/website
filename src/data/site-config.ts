@@ -38,7 +38,7 @@ export type SiteConfig = {
 
 const siteConfig: SiteConfig = {
     title: 'Lachi Singh',
-    subtitle: 'London School of Economics and Political Science',
+    subtitle: 'PhD candidate, Department of Economics\nLondon School of Economics and Political Science',
     description: 'PhD student at LSE in the Dept. of Economics',
     image: {
         src: '/lachi-portrait.jpeg',
@@ -88,8 +88,8 @@ const siteConfig: SiteConfig = {
                 href: 'https://www.linkedin.com/in/lachi-singh/'
             },
             {
-                text: "CV",
-                href: "https://www.dropbox.com/scl/fi/brwi7in5po21netqaroai/LachiSingh_CV.pdf?rlkey=64pqoypxjcw80tuxm4wiiztip&st=nu2gw81t&dl=0"
+                text: 'CV',
+                href: 'https://www.dropbox.com/scl/fi/brwi7in5po21netqaroai/LachiSingh_CV.pdf?rlkey=64pqoypxjcw80tuxm4wiiztip&st=nu2gw81t&dl=0'
             }
         ]
     },
