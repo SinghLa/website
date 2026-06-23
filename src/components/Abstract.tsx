@@ -11,7 +11,7 @@ export default function Abstract({ abstract }: Props) {
     if (!expanded) {
         return (
             <>
-                <div className="mt-2 text-sm leading-normal text-justify line-clamp-3 prose prose-dante dark:prose-dark max-w-none">
+                <div className="mt-2 text-sm leading-normal text-justify line-clamp-3 prose prose-dante max-w-none">
                   <Markdown>{abstract}</Markdown>
                 </div>
                 <button className="underline text-sm leading-normal mt-4 italic" onClick={() => setExpanded(true)}>
@@ -23,7 +23,7 @@ export default function Abstract({ abstract }: Props) {
 
     return (
         <>
-            <div className="mt-2 text-sm leading-normal text-justify prose prose-dante dark:prose-dark max-w-none">
+            <div className="mt-2 text-sm leading-normal text-justify prose prose-dante max-w-none">
               <Markdown>{abstract}</Markdown>
             </div>
             <button className="underline text-sm leading-normal mt-4 italic" onClick={() => setExpanded(false)}>
