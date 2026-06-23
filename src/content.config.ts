@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 const seoSchema = z.object({
     title: z.string().min(5).max(120).optional(),
@@ -13,6 +14,7 @@ const seoSchema = z.object({
 });
 
 const pages = defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/pages' }),
     schema: z.object({
         title: z.string(),
         seo: seoSchema.optional()
@@ -20,6 +22,7 @@ const pages = defineCollection({
 });
 
 const workInProgress = defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/workInProgress' }),
     schema: z.object({
         title: z.string(),
         abstract: z.string().optional(),
@@ -41,6 +44,7 @@ const workInProgress = defineCollection({
 });
 
 const workingPaper = defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/workingPaper' }),
     schema: z.object({
         title: z.string(),
         abstract: z.string(),
@@ -66,6 +70,7 @@ const workingPaper = defineCollection({
 });
 
 const published = defineCollection({
+    loader: glob({ pattern: '**/*.md', base: './src/content/published' }),
     schema: z.object({
         title: z.string(),
         abstract: z.string(),
