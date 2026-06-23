@@ -1,8 +1,8 @@
 ---
 title: Teaching
 seo:
-  title: Teaching
-  description: These are all the courses I have taught
+    title: Teaching
+    description: These are all the courses I have taught
 ---
 
 ## Course Manager and Teacher
