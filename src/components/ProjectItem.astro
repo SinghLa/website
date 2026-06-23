@@ -1,52 +1,42 @@
 ---
 import type { ProjectEntry } from '../utils/data-utils';
 import Abstract from './Abstract';
-import Coauthor from './Coauthor.astro';
+import Markdown from './Markdown';
 
 type Props = { project: ProjectEntry };
 
 const { project } = Astro.props;
-const { title, abstract, coauthors, funding, links } = project.data;
+const { title, abstract, coauthors, funding, links, note } = project.data;
 ---
 
 <div>
     <h2
-        class="text-xl leading-tight font-serif font-medium group-hover:underline group-hover:decoration-dashed group-hover:underline-offset-4
-        group-hover:decoration-1 sm:text-2xl"
+        class="text-xl leading-tight font-serif font-semibold group-hover:underline group-hover:decoration-dashed group-hover:underline-offset-4
+        group-hover:decoration-1 sm:text-2xl text-accent dark:text-accent-200"
     >
         {title}
     </h2>
     {
-        coauthors.length > 0 && (
+        coauthors && (
             <p class="text-sm italic">
-                with{' '}
-                {coauthors.map((ca) => (
-                    <Coauthor coauthor={ca} />
-                ))}
+                with <Markdown content={coauthors} />
             </p>
         )
     }
     {
-        funding && funding.length > 0 && (
-            <ul class="py-2">
-                {funding.map((funder) => (
-                    <li>
-                        <p class="text-sm italic">{funder.name}</p>
-                    </li>
-                ))}
-            </ul>
+        funding && (
+            <div class="py-2 text-sm italic">
+                <Markdown content={funding} />
+            </div>
         )
     }
-    {links && links.length && (
-      <ul class="flex flex-row gap-2">
-        {links.map(l => (
-          <li>
-            <p class="text-sm underline italic">
-              <a href={l.link}>{l.title}</a>
-            </p>
-          </li>))
-        }
-      </ul>
-    )}
+    {
+        links && (
+            <div class="text-sm italic text-accent dark:text-accent-200">
+                <Markdown content={links} />
+            </div>
+        )
+    }
+    {note && <p class="text-sm italic">{note}</p>}
     {abstract && <Abstract client:load abstract={abstract} />}
 </div>

@@ -1,10 +1,7 @@
 ---
 title: 'Making Green Transition Work: Adoption of Electric Vehicles in India'
 abstract: 'While electric vehicle (EV) adoption has surged in developed countries, far less is known about how this green transition will unfold in the Global South. Against the backdrop of rapid industrialization and motorization, developing countries will soon become the primary carbon emitters for the next generation. Facilitating EV transition may therefore become the most crucial lever to reach the right balance between economic growth and reducing emissions. This project will provide the first in-depth documentation of EV transition in India over the last decade and discuss how to make green transition work in developing economies. Transport accounts for around 14% of energy-related CO2 emissions in India and is one of the fastest-growing emissions sectors. EV adoption is now central to India’s Nationally Determined Contributions (NDCs) and Low-Emission Development Strategy (LEDS). India is also one of the first developing countries to launch policies such as FAME (Faster Adoption and Manufacturing of Electric Vehicles) to speed up EV uptake, yet progress has been uneven across states and vehicle segments. Absence of systematic data and empirical analysis has left open questions about the effectiveness of EV policies and their heterogeneities. This project will build a novel comprehensive dataset combining vehicle registrations, state and national policies, charging infrastructure, and congestion and local air pollution data. We will answer three interrelated questions: (1) What is the status of EV adoption in India, and how does it vary spatially and by vehicle segments? (2) How effective have subsidies and other policies been in driving uptake? (3) Through a general equilibrium framework, we explore what combinations of policies—like congestion pricing or targeted subsidies—can accelerate adoption and generate environmental benefits most cost-effectively? With reduced-form regression-analysis and quantitative modelling, we identify the main barriers and the right incentives to scale up green transition in the developing world.'
-funding:
-  - name: supported by IGC
-coauthors:
-  - name: Linchuan Xu
-    link: https://www.linchuanxu.com
+funding: supported by IGC
+coauthors: '[Linchuan Xu](https://www.linchuanxu.com)'
 draft: false
 ---

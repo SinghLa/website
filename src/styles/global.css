@@ -28,11 +28,39 @@ html.dark  { --tone-fg: 214 224 226; --tone-surface: 22 42 43;    --tone-muted: 
 html.dark  { --tone-fg: 243 239 230; --tone-surface: 94 108 91;   --tone-muted: 89 103 86; }
 */
 
+/* ---------- Accent palette (Monza) ---------- */
+:root {
+    --color-monza-50: #fff0f1;
+    --color-monza-100: #ffdcdf;
+    --color-monza-200: #ffbfc5;
+    --color-monza-300: #ff939e;
+    --color-monza-400: #ff5566;
+    --color-monza-500: #ff2137;
+    --color-monza-600: #ff0019;
+    --color-monza-700: #d90015;
+    --color-monza-800: #c20114;
+    --color-monza-900: #930917;
+    --color-monza-950: #510008;
+}
+
 /* ---------- Theme tokens (inline so runtime --tone-* swap flows through) ---------- */
 @theme inline {
     --color-main: rgb(var(--tone-fg)); /* text-main, border-main */
     --color-surface: rgb(var(--tone-surface)); /* was bg-main -> bg-surface */
     --color-muted: rgb(var(--tone-muted)); /* bg-muted */
+
+    --color-accent-50: var(--color-monza-50);
+    --color-accent-100: var(--color-monza-100);
+    --color-accent-200: var(--color-monza-200);
+    --color-accent-300: var(--color-monza-300);
+    --color-accent-400: var(--color-monza-400);
+    --color-accent-500: var(--color-monza-500);
+    --color-accent-600: var(--color-monza-600);
+    --color-accent-700: var(--color-monza-700);
+    --color-accent-800: var(--color-monza-800);
+    --color-accent-900: var(--color-monza-900);
+    --color-accent-950: var(--color-monza-950);
+    --color-accent: var(--color-accent-600); /* default accent, e.g. text-accent, bg-accent */
 
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-serif: 'Newsreader', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
