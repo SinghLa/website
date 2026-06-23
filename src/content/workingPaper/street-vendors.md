@@ -5,7 +5,7 @@ funding:
   - name: supported by IGC, BA, H.E.R. (STICERD)
 coauthors:
   - name: Muskan Jain
-    link: 'https://www.lse.ac.uk/economics/people/research-students/muskan-jain'
+    link: 'https://jainmuskan.com/'
 draft: false
 note: 'Draft available upon request'
 ---
