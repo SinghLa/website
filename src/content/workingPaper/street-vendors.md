@@ -7,4 +7,5 @@ coauthors:
   - name: Muskan Jain
     link: 'https://www.lse.ac.uk/economics/people/research-students/muskan-jain'
 draft: false
+note: 'Draft available upon request'
 ---

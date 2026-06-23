@@ -40,6 +40,7 @@ const workInProgress = defineCollection({
                 })
             )
             .optional(),
+        note: z.string().optional(),
         draft: z.boolean()
     })
 });
@@ -66,6 +67,7 @@ const workingPaper = defineCollection({
             title: z.string(),
             link: z.url(),
         })).optional(),
+        note: z.string().optional(),
         draft: z.boolean()
     })
 });
@@ -88,6 +90,7 @@ const published = defineCollection({
                 })
             )
             .optional(),
+        note: z.string().optional(),
         draft: z.boolean()
     })
 });
