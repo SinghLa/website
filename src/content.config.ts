@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const seoSchema = z.object({
     title: z.string().min(5).max(120).optional(),
@@ -29,7 +30,7 @@ const workInProgress = defineCollection({
         coauthors: z.array(
             z.object({
                 name: z.string(),
-                link: z.string().url().optional()
+                link: z.url().optional()
             })
         ),
         funding: z
@@ -51,7 +52,7 @@ const workingPaper = defineCollection({
         coauthors: z.array(
             z.object({
                 name: z.string(),
-                link: z.string().url().optional()
+                link: z.url().optional()
             })
         ),
         funding: z
@@ -63,7 +64,7 @@ const workingPaper = defineCollection({
             .optional(),
         links: z.array(z.object({
             title: z.string(),
-            link: z.string().url(),
+            link: z.url(),
         })).optional(),
         draft: z.boolean()
     })
@@ -77,7 +78,7 @@ const published = defineCollection({
         coauthors: z.array(
             z.object({
                 name: z.string(),
-                link: z.string().url().optional()
+                link: z.url().optional()
             })
         ),
         funding: z
