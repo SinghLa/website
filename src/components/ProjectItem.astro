@@ -41,7 +41,7 @@ const { title, abstract, coauthors, funding, links, note } = project.data;
       <ul class="flex flex-row gap-2">
         {links.map(l => (
           <li>
-            <p class="text-sm underline italic">
+            <p class="text-sm underline italic text-accent dark:text-accent-200">
               <a href={l.link}>{l.title}</a>
             </p>
           </li>))
