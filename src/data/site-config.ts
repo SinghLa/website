@@ -38,7 +38,7 @@ export type SiteConfig = {
 
 const siteConfig: SiteConfig = {
     title: 'Lachi Singh',
-    subtitle: 'PhD candidate, Department of Economics\nLondon School of Economics and Political Science',
+    subtitle: 'PhD candidate, Department of Economics, London School of Economics and Political Science',
     description: 'PhD student at LSE in the Dept. of Economics',
     image: {
         src: '/lachi-portrait.jpeg',
