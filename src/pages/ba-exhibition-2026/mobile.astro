@@ -1,0 +1,1359 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+const MAX_WIDTH = 1080;
+const modules = import.meta.glob<{ default: ImageMetadata }>('../../assets/ba-exhibition-2026/*.{jpg,JPG,png}', { eager: true });
+
+const imgs: Record<string, string> = {};
+for (const [path, mod] of Object.entries(modules)) {
+    const name = path.split('/').pop() as string;
+    const src = mod.default;
+    // QR code stays a lossless PNG; photos become width-capped WebP
+    const optimized = name.endsWith('.png')
+        ? await getImage({ src, format: 'png' })
+        : await getImage({ src, format: 'webp', quality: 80, width: Math.min(MAX_WIDTH, src.width) });
+    imgs[name] = optimized.src;
+}
+---
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>British Academy Ideas Festival</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style is:inline>
+  :root {
+    --cream:    #f5f0e8;
+    --sand:     #dde8e6;
+    --terracotta: #b06a2a;
+    --rust:     #8a5020;
+    --ochre:    #ebb978;
+    --brown:    #2e4a4a;
+    --charcoal: #1e3c3a;
+    --overlay:  rgba(18,38,36,0.78);
+    --caption-bg: rgba(245,240,232,0.97);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  /* Character transition slides on black background */
+  .slide-char-transition .slide-tag { color: var(--terracotta); }
+  .slide-char-transition .slide-headline { color: #1a1a1a; }
+  .slide-char-transition .slide-body { color: #2c2c2c; }
+  .slide-char-transition .ornament { background: var(--terracotta); }
+  .slide-char-transition .char-name { color: #1a1a1a; }
+  .slide-char-transition .char-role { color: var(--rust); }
+
+  html, body {
+    width:100%; height:100%;
+    background: var(--charcoal);
+    overflow: hidden;
+    font-family: 'Lora', Georgia, serif;
+    color: var(--charcoal);
+    cursor: default;
+    font-size: clamp(10px, 1.8vmin, 22px); /* Fluid base: vmin scales on both phones and large screens */
+  }
+
+  /* ── SLIDE CONTAINER ── */
+  #slideshow {
+    width:100vw; height:100vh;
+    position:relative;
+  }
+
+  .slide {
+    position:absolute; inset:0;
+    opacity:0;
+    transition: opacity 0.9s ease;
+    pointer-events:none;
+  }
+  .slide.active {
+    opacity:1;
+    pointer-events:all;
+  }
+
+  /* ── SLIDE TYPES ── */
+
+  /* Title */
+  .slide-title {
+    background: var(--charcoal);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding: 40px 80px;
+  }
+  .slide-title .eyebrow {
+    font-family:'Lora', serif;
+    font-size: clamp(1rem,1.4vw,1.6rem);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 3vmin;
+  }
+  .slide-title h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.8rem, 8vw, 7.5rem);
+    line-height: 1.12;
+    color: var(--cream);
+    max-width: 1200px;
+    margin-bottom: 3vmin;
+  }
+  .slide-title h1 em {
+    color: var(--ochre);
+    font-style: italic;
+  }
+  .slide-title .subtitle {
+    font-size: clamp(1.2rem,1.8vw,2rem);
+    color: var(--sand);
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+  }
+  .title-ornament {
+    width: 80px; height: 3px;
+    background: var(--terracotta);
+    margin: 2.5vmin auto;
+  }
+
+  /* Image-only slides (maps, frames) */
+  .slide-image {
+    background: var(--charcoal);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .slide-image img {
+    max-width:100%; max-height:100%;
+    object-fit:contain;
+    display:block;
+  }
+
+  /* Text + image split */
+  .slide-split {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--cream);
+  }
+  .slide-split .left {
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding: 5vmin 4vmin;
+    background: var(--cream);
+  }
+  .slide-split .right {
+    position:relative;
+    overflow:hidden;
+  }
+  .slide-split .right img {
+    width:100%; height:100%;
+    object-fit:cover;
+  }
+
+  /* Text-only / transition slides */
+  .slide-text {
+    background: var(--sand);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding: 4vmin 7vmin;
+    text-align:center;
+    overflow:hidden;
+  }
+
+  /* Placeholder for missing images */
+  .img-placeholder {
+    width:100%; height:100%;
+    background: linear-gradient(135deg, #c8d8d6 0%, #8aada8 100%);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap: 1.2vmin;
+    color: var(--brown);
+  }
+  .img-placeholder .ph-icon {
+    font-size: clamp(1.8rem,2.5vw,3rem);
+    opacity: 0.5;
+  }
+  .img-placeholder .ph-label {
+    font-family: 'Lora', serif;
+    font-size: clamp(0.7rem,0.8vw,0.9rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    max-width: 240px;
+    text-align:center;
+    line-height:1.5;
+  }
+
+  /* Comic frame slides */
+  /* ── COMIC FRAME SLIDES — stacked layout ── */
+  .slide-frame {
+    background: #000;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  /* sentence bar at top — fixed height so image area is constant */
+  .frame-label {
+    flex: 0 0 9vmin;
+    display:flex; align-items:center; justify-content:center;
+    background: #000;
+    overflow: hidden;
+  }
+  .frame-label .frame-sentence {
+    font-family:'Playfair Display', serif;
+    font-size: clamp(0.75rem, 1.3vw, 1.35rem);
+    color: var(--cream);
+    text-align:center;
+    line-height: 1.4;
+    width: 100%;
+    padding: 1.5vmin 5vmin;
+    box-sizing: border-box;
+    border-bottom: 0.2vmin solid rgba(245,240,232,0.12);
+  }
+  /* image fills middle, contained (gaps on sides are fine) */
+  .slide-frame img.framed {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+    background: #000;
+  }
+  .slide-frame .img-placeholder {
+    flex: 1 1 0;
+    min-height: 0;
+    display:flex; align-items:center; justify-content:center;
+    background: #000;
+  }
+
+  /* ── STAT BAR — fixed height so image area is constant ── */
+  .stat-bar {
+    flex: 0 0 12vmin;
+    display:flex; flex-direction:column; justify-content:center; gap:0.4vmin;
+    background: #000;
+    border-top: 0.35vmin solid var(--terracotta);
+    padding: 1.2vmin 5vmin;
+    overflow: hidden;
+    z-index: 30;
+  }
+  .stat-label {
+    font-family:'Lora', serif;
+    font-size: clamp(0.6rem, 0.75vw, 0.85rem);
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    flex-shrink: 0;
+  }
+  .stat-text {
+    font-family:'Playfair Display', serif;
+    font-size: clamp(0.7rem, 1.05vw, 1.1rem);
+    line-height: 1.45;
+    color: var(--cream);
+  }
+  /* ── TYPOGRAPHY helpers ── */
+  .slide-tag {
+    font-size:clamp(0.9rem,1.3vw,1.6rem);
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color: var(--terracotta);
+    margin-bottom:1.5vmin;
+    font-family:'Lora', serif;
+  }
+  .slide-headline {
+    font-family:'Playfair Display', serif;
+    font-size: clamp(3rem, 5vw, 4rem);
+    line-height:1.18;
+    color: var(--charcoal);
+    margin-bottom:2vmin;
+  }
+  .slide-headline.light { color: var(--cream); }
+  .slide-body {
+    font-family:'Lora', serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+    line-height:1.75;
+    color: var(--brown);
+  }
+  .slide-body.light { color: var(--sand); }
+  .ornament {
+    width:4vmin; height:0.2vmin;
+    background: var(--terracotta);
+    margin: 20px 0;
+  }
+
+  /* Stat callouts */
+  .stat-row {
+    display:flex; gap: 3.5vmin;
+    margin-top: 2.5vmin;
+    flex-wrap:wrap;
+  }
+  .stat-item { display:flex; flex-direction:column; gap:0.4vmin; }
+  .stat-num {
+    font-family:'Playfair Display', serif;
+    font-size:clamp(1.8rem,2.5vw,3rem);
+    color: var(--terracotta);
+    font-weight:700;
+  }
+  .stat-desc {
+    font-family:'Lora', serif;
+    font-size:clamp(0.8rem,1vw,1.1rem);
+    color: var(--brown);
+    max-width:200px;
+    line-height:1.4;
+  }
+
+  /* Character intro cards */
+  .character-strip {
+    display:flex; gap:40px;
+    justify-content:center;
+    margin-top:3vmin;
+  }
+  .char-card {
+    display:flex; flex-direction:column;
+    align-items:center; gap:1vmin;
+    max-width:180px; text-align:center;
+  }
+  .char-avatar {
+    width:14vmin; height:14vmin;
+    border-radius:50%;
+    background: linear-gradient(135deg, #7ab0aa 0%, #2e6460 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(2rem,3vw,3.5rem);
+    border: 0.3vmin solid var(--terracotta);
+  }
+  .char-name {
+    font-family:'Playfair Display', serif;
+    font-size:clamp(1.2rem,1.8vw,2rem);
+    color: var(--charcoal);
+  }
+  .char-role {
+    font-family:'Lora', serif;
+    font-size:clamp(0.85rem,1.1vw,1.3rem);
+    color: var(--rust);
+    letter-spacing:0.06em;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position:fixed;
+    bottom:0; left:0;
+    height:0.4vmin;
+    background: var(--terracotta);
+    width:0%;
+    z-index:100;
+    transition: width linear;
+  }
+
+  /* ── SLIDE COUNTER ── */
+  #slide-counter {
+    position:fixed;
+    bottom:1.5vmin; left:50%;
+    transform:translateX(-50%);
+    display:flex; gap:0.7vmin;
+    z-index:100;
+  }
+  .dot {
+    width:0.7vmin; height:0.7vmin;
+    border-radius:50%;
+    background: rgba(255,255,255,0.25);
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.current {
+    background: var(--terracotta);
+    transform:scale(1.35);
+  }
+
+  /* Map slide special layout */
+  .slide-map {
+    background: var(--charcoal);
+    display:grid;
+    grid-template-columns: 1.6fr 0.4fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .slide-map .map-visual {
+    display:flex; align-items:center; justify-content:center;
+    padding: 1.5vmin 1vmin 1.5vmin 2vmin;
+    background: var(--charcoal);
+    overflow:hidden;
+    min-height: 0;
+  }
+  .slide-map .map-visual img {
+    max-width:100%;
+    max-height: 97vh;
+    width: auto;
+    height: auto;
+    object-fit:contain;
+    display: block;
+  }
+  .slide-map .map-text {
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding: 3vmin 3vmin 3vmin 2vmin;
+    background: var(--charcoal);
+    gap: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .slide-map .map-footnote {
+    margin-top: 1.5vmin;
+    padding-top: 1.2vmin;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-family:'Lora', serif;
+    font-size: clamp(0.6rem, 0.75vw, 0.9rem);
+    color: rgba(232,220,200,0.7);
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+  }
+
+  /* World/India placeholder slides */
+  .slide-placeholder-map {
+    background: var(--cream);
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+  .slide-placeholder-map .map-area {
+    position:relative;
+    overflow:hidden;
+  }
+  .slide-placeholder-map .text-area {
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding: 5vmin 4vmin;
+    background: var(--charcoal);
+  }
+
+  /* Conclusion */
+  .slide-conclusion {
+    background: var(--charcoal);
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .slide-conclusion .left {
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding: 5vmin 4vmin;
+  }
+  .slide-conclusion .right {
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding: 5vmin 4vmin;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    gap:2.5vmin;
+  }
+  .policy-item {
+    display:flex; gap:1.4vmin; align-items:flex-start;
+  }
+  .policy-dot {
+    width:0.8vmin; height:0.8vmin;
+    min-width:0.8vmin;
+    border-radius:50%;
+    background: var(--terracotta);
+    margin-top:0.6vmin;
+  }
+  .policy-text {
+    font-family:'Lora', serif;
+    font-size:clamp(1rem,1.4vw,1.6rem);
+    color: var(--sand);
+    line-height:1.6;
+  }
+
+  /* QR placeholder */
+  .qr-box {
+    width:9vmin; height:9vmin;
+    border:2px solid var(--ochre);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:0.5vmin;
+    padding:1vmin;
+  }
+  .qr-box .qr-inner {
+    width:100%; height:100%;
+    background: repeating-linear-gradient(
+      0deg, var(--ochre) 0px, var(--ochre) 2px, transparent 2px, transparent 6px
+    ),
+    repeating-linear-gradient(
+      90deg, var(--ochre) 0px, var(--ochre) 2px, transparent 2px, transparent 6px
+    );
+    opacity:0.3;
+  }
+
+  /* ── RESPONSIVE OVERRIDES (tablet) ── */
+  @media (max-width: 768px) {
+    .slide-split { grid-template-columns: 1fr; }
+    .slide-map { grid-template-columns: 1fr; }
+    .slide-conclusion { grid-template-columns: 1fr; }
+    .slide-placeholder-map { grid-template-columns: 1fr; }
+  }
+
+  /* ══════════════════════════════════════════════════════
+     MOBILE PHONE OVERRIDES (portrait & narrow landscape)
+     Every two/multi-column layout collapses to a single
+     column so nothing is squeezed onto a narrow screen.
+     !important is required because most layouts are set
+     via inline styles in the markup.
+  ══════════════════════════════════════════════════════ */
+  @media (max-width: 700px) {
+
+    html, body {
+      font-size: clamp(13px, 3.4vw, 20px);
+    }
+
+    /* Any slide using the "text | image, 1fr 1.6fr" grid pattern
+       (character transitions + field photo slides) stacks to
+       one column: image on top, caption below. */
+    .slide-char-transition,
+    .slide-field-photo,
+    #slideshow > .slide[style*="grid-template-columns:1fr 1.6fr"] {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: 55vh 45vh !important;
+      height: 100vh !important;
+    }
+    .slide-char-transition > div,
+    .slide-field-photo > div {
+      padding: 3vh 5vw !important;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .slide-char-transition > div:first-child,
+    .slide-field-photo > div:first-child { order: 2 !important; }
+    .slide-char-transition > div:last-child,
+    .slide-field-photo > div:last-child  { order: 1 !important; }
+
+    /* Standard split / map / conclusion / placeholder-map layouts */
+    .slide-split,
+    .slide-map,
+    .slide-conclusion,
+    .slide-placeholder-map {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: 48vh 52vh;
+    }
+    .slide-map .map-visual { padding: 1vh 3vw !important; }
+    .slide-map .map-text   { padding: 2vh 4vw !important; }
+    .slide-conclusion .left,
+    .slide-conclusion .right,
+    .slide-split .left {
+      padding: 2.5vh 4vw !important;
+    }
+    .slide-conclusion .right {
+      border-left: none !important;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* World map country grid: 6 cols -> 3 cols */
+    .mobile-world-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    /* Credits: 2 cols -> 1 col */
+    .mobile-credits-grid {
+      grid-template-columns: 1fr !important;
+      gap: 24px !important;
+    }
+    .mobile-credits-grid > div[style*="grid-column"] {
+      grid-column: auto !important;
+    }
+
+    /* Comic-frame slides: give the sentence bar and stat bar
+       more breathing room relative to portrait height instead
+       of the kiosk-tuned vmin values. */
+    .frame-label { flex-basis: 16vh !important; }
+    .stat-bar    { flex-basis: 20vh !important; }
+    .frame-label .frame-sentence { padding: 2vh 4vw !important; }
+    .stat-bar { padding: 1.5vh 4vw !important; }
+
+    /* Title slide padding */
+    .slide-title { padding: 6vh 6vw !important; }
+
+    /* Text-only slides */
+    .slide-text { padding: 4vh 6vw !important; }
+
+    /* Character strip (three portraits) wraps instead of
+       squeezing onto one line */
+    .character-strip { gap: 16px !important; flex-wrap: wrap; }
+    .char-card { max-width: 110px; }
+
+    /* Stat rows wrap cleanly */
+    .stat-row { gap: 20px !important; }
+
+    /* Slide counter dots: slightly larger tap/visual target */
+    .dot { width: 6px; height: 6px; }
+  }
+
+  /* Landscape phones (wide but short) keep more of the
+     original side-by-side layouts, since width is plentiful,
+     but still relax the comic-frame chrome sizing. */
+  @media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+    .frame-label { flex-basis: 22vh !important; }
+    .stat-bar    { flex-basis: 26vh !important; }
+  }
+
+
+</style>
+</head>
+<body>
+
+<div id="slideshow">
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 1 — TITLE
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-title active" data-duration="8">
+    <div class="eyebrow">London School of Economics and Political Science · British Academy Ideas Festival 2026</div>
+    <h1>Street Vendors: <em>Smarter Choices,</em> Tougher Lives Than You'd Think</h1>
+    <div class="title-ornament"></div>
+    <div class="subtitle">Swati Dhingra &nbsp;·&nbsp; Muskan Jain &nbsp;·&nbsp; Lachi Singh</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 2 — WORLD MAP / COUNTRY SILHOUETTES
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-text" data-duration="16" style="background:var(--charcoal); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3vmin 5vmin 2.5vmin;">
+    <div style="text-align:center; margin-bottom:1.5vmin;">
+      <div class="slide-tag" style="color:var(--ochre); text-align:center;">Global Context</div>
+      <div class="slide-headline light" style="font-size:clamp(1.6rem,3vw,3.5rem); margin-bottom:1vmin;">A large number of people work as street vendors across the world</div>
+      <p class="slide-body light" style="font-size:clamp(0.85rem,1.3vw,1.4rem); max-width:1000px; margin:0 auto;">Depending on where you focus, street vending makes up anywhere from 1.8% to 8% of employment in developing countries.</p>
+    </div>
+
+    <!-- Country silhouettes grid -->
+    <style is:inline>
+      .country-block { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:0.5vmin; }
+      .country-svg { display:block; width:auto; height:auto; max-height:9vmin; max-width:100%; }
+      .country-name { font-family:'Lora',serif; font-size:clamp(0.6rem,0.85vw,0.95rem); color:var(--cream); text-align:center; letter-spacing:0.04em; }
+      .country-pct { font-family:'Playfair Display',serif; font-size:clamp(0.75rem,1.1vw,1.2rem); font-weight:700; }
+    </style>
+    <div class="mobile-world-grid" style="display:grid; grid-template-columns:repeat(6,1fr); gap:1.5vmin 2vmin; width:100%; max-width:1300px;">
+
+      <!-- Each country: SVG silhouette + name + % -->
+      <!-- Using simplified geometric shapes as stand-in silhouettes, filled by share -->
+      <!-- Color scale: light teal (#a8d5cf) at 1.8% → deep terracotta (#b06a2a) at 8% -->
+
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 110 55">
+          <path d="M 105.9,37.4 L 103.3,38.3 L 101.4,36.9 L 95.0,36.2 L 92.7,37.0 L 86.5,37.9 L 83.6,37.8 L 77.3,39.8 L 72.8,39.8 L 70.0,38.8 L 64.0,40.3 L 62.2,39.3 L 61.9,42.3 L 60.4,43.5 L 59.0,44.7 L 57.0,42.2 L 59.0,40.2 L 55.7,40.6 L 51.2,39.4 L 47.4,42.5 L 39.2,43.1 L 34.8,40.2 L 28.9,40.0 L 27.7,42.3 L 23.9,42.9 L 18.6,40.0 L 12.7,40.1 L 9.5,34.7 L 5.5,31.7 L 8.1,27.5 L 4.7,24.9 L 10.7,19.7 L 19.1,19.5 L 21.4,15.3 L 31.8,16.0 L 38.3,12.5 L 44.6,11.0 L 53.6,10.9 L 63.1,14.7 L 70.9,16.8 L 77.3,16.0 L 82.0,16.4 L 88.4,13.6 L 94.2,13.3 L 99.4,16.0 L 100.3,17.9 L 99.8,20.6 L 103.9,21.9 L 106.0,23.5 L 102.3,25.1 L 104.0,31.3 L 102.9,33.0 L 105.9,37.4 L 105.9,37.4 Z M 4.4,12.0 L 9.9,10.3 L 14.6,11.0 L 15.3,13.1 L 20.0,14.9 L 19.0,16.2 L 12.6,16.5 L 10.3,18.2 L 5.7,21.1 L 4.0,18.6 L 4.1,17.5 L 5.4,16.9 L 7.1,13.5 L 4.4,12.0 Z" fill="rgb(168,213,207)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Turkey</div>
+        <div class="country-pct" style="color:rgb(168,213,207);">1.8%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 44 80">
+          <path d="M 38.4,34.7 L 34.3,34.0 L 28.6,34.9 L 25.8,38.5 L 26.8,43.8 L 22.9,41.8 L 19.1,41.9 L 19.8,38.4 L 15.9,38.5 L 15.6,43.3 L 13.2,49.7 L 11.8,53.6 L 12.1,56.7 L 14.9,56.9 L 16.7,60.9 L 17.5,64.7 L 20.0,67.2 L 22.6,67.7 L 24.9,70.0 L 23.5,71.8 L 20.6,72.3 L 20.2,70.0 L 16.6,68.1 L 15.9,68.9 L 14.1,67.2 L 13.4,65.0 L 11.1,62.6 L 8.9,60.5 L 8.2,63.1 L 7.4,60.6 L 7.9,57.9 L 9.2,53.7 L 11.3,49.2 L 13.7,45.1 L 12.0,41.1 L 12.0,39.1 L 11.5,36.6 L 8.6,33.1 L 7.6,30.9 L 9.1,30.1 L 10.7,26.3 L 8.9,23.4 L 6.1,20.2 L 4.0,16.4 L 5.8,15.6 L 7.8,10.8 L 10.9,10.6 L 13.5,8.7 L 16.0,7.7 L 17.9,9.1 L 18.2,11.7 L 21.1,11.9 L 20.0,16.5 L 20.1,20.5 L 24.8,17.8 L 26.1,18.6 L 28.6,18.5 L 29.5,17.0 L 32.8,17.3 L 36.2,20.8 L 36.5,25.2 L 40.0,29.0 L 39.8,32.7 L 38.4,34.7 Z" fill="rgb(168,207,199)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Thailand</div>
+        <div class="country-pct" style="color:rgb(168,207,199);">2.1%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 53 80">
+          <path d="M 38.2,7.4 L 37.4,10.7 L 41.8,16.1 L 41.7,23.7 L 42.7,31.9 L 45.4,35.7 L 43.0,45.2 L 43.9,50.4 L 46.7,57.0 L 49.0,60.7 L 32.6,66.8 L 26.8,70.4 L 17.4,73.4 L 8.1,70.4 L 8.5,66.3 L 4.0,57.3 L 6.7,45.5 L 11.1,36.7 L 8.4,21.8 L 6.9,14.0 L 7.2,8.0 L 25.3,7.5 L 30.0,8.3 L 33.3,6.6 L 38.2,7.4 Z" fill="rgb(168,209,201)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Ghana</div>
+        <div class="country-pct" style="color:rgb(168,209,201);">2.0%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 100 95">
+          <path d="M 52.2,91.0 L 51.6,89.7 L 52.6,88.7 L 51.3,87.2 L 49.5,85.9 L 47.2,84.5 L 46.4,84.6 L 44.2,82.8 L 42.7,83.1 L 45.7,80.0 L 48.2,77.9 L 49.7,77.0 L 51.6,75.7 L 51.6,74.0 L 50.5,72.7 L 49.4,73.1 L 49.8,71.8 L 50.1,70.5 L 50.1,69.3 L 49.3,68.9 L 48.5,69.2 L 47.7,69.1 L 47.4,68.3 L 47.2,66.2 L 46.8,65.6 L 45.3,64.9 L 44.4,65.4 L 42.0,65.0 L 42.2,61.9 L 41.5,60.7 L 42.2,60.2 L 42.0,59.0 L 42.6,58.0 L 43.0,56.2 L 42.5,54.8 L 41.3,54.2 L 41.0,53.3 L 41.3,52.0 L 37.1,52.0 L 36.2,49.4 L 36.9,49.3 L 36.8,48.4 L 36.4,47.7 L 36.3,46.4 L 35.0,45.8 L 33.6,45.8 L 32.7,45.1 L 31.2,44.7 L 30.3,43.9 L 27.8,43.5 L 25.4,41.5 L 25.6,40.0 L 25.3,39.1 L 25.5,37.5 L 22.6,37.8 L 21.4,38.7 L 19.5,39.6 L 19.0,40.3 L 17.8,40.3 L 16.2,40.1 L 14.9,40.5 L 13.9,40.2 L 14.0,36.9 L 12.2,38.2 L 10.2,38.1 L 9.4,36.9 L 7.9,36.8 L 8.4,35.8 L 7.2,34.5 L 6.2,32.5 L 6.8,32.1 L 6.8,31.1 L 8.2,30.5 L 7.9,29.3 L 8.5,28.5 L 8.7,27.5 L 11.2,25.9 L 13.0,25.5 L 13.3,25.2 L 15.4,25.3 L 16.4,19.2 L 16.4,18.2 L 16.1,16.9 L 15.1,16.1 L 15.1,14.5 L 16.3,14.1 L 16.8,14.4 L 16.9,13.5 L 15.6,13.3 L 15.5,11.9 L 19.9,11.9 L 20.6,11.2 L 21.2,11.9 L 21.7,13.2 L 22.1,12.9 L 23.3,14.1 L 25.0,13.9 L 25.5,13.3 L 27.1,12.7 L 28.1,12.4 L 28.3,11.4 L 29.9,10.8 L 29.8,10.3 L 27.9,10.1 L 27.6,8.7 L 27.7,7.2 L 26.7,6.6 L 27.1,6.4 L 28.7,6.7 L 30.5,7.3 L 31.2,6.8 L 32.8,6.4 L 35.3,5.6 L 36.1,4.7 L 35.8,4.1 L 36.9,4.0 L 37.5,4.5 L 37.2,5.5 L 37.9,5.8 L 38.4,6.9 L 37.8,7.7 L 37.5,9.6 L 38.0,10.7 L 38.2,11.7 L 39.6,12.8 L 40.7,12.9 L 40.9,12.4 L 41.6,12.3 L 42.6,11.9 L 43.4,11.4 L 44.6,11.5 L 45.1,11.5 L 46.3,11.6 L 46.6,11.2 L 46.2,10.7 L 46.4,10.1 L 47.3,10.3 L 48.4,10.1 L 49.6,10.5 L 50.6,11.0 L 51.3,10.4 L 51.8,10.5 L 52.1,11.1 L 53.2,11.0 L 54.0,10.1 L 54.7,8.5 L 56.0,6.4 L 56.8,6.3 L 57.3,7.6 L 58.6,11.5 L 59.8,11.8 L 59.8,13.4 L 58.2,15.2 L 58.9,15.9 L 62.8,16.2 L 62.9,18.5 L 64.6,17.0 L 67.4,17.8 L 71.1,19.2 L 72.2,20.5 L 71.8,21.7 L 74.4,21.0 L 78.7,22.2 L 82.1,22.1 L 85.4,23.9 L 88.2,26.4 L 89.9,27.1 L 91.8,27.2 L 92.6,27.9 L 93.4,30.7 L 93.8,32.1 L 92.9,35.8 L 91.7,37.2 L 88.6,40.3 L 87.2,42.8 L 85.5,44.8 L 85.0,44.8 L 84.4,46.5 L 84.5,50.6 L 83.9,54.1 L 83.7,55.5 L 82.9,56.4 L 82.6,59.4 L 80.3,62.3 L 79.9,64.6 L 78.1,65.6 L 77.6,66.9 L 75.2,66.9 L 71.7,67.8 L 70.1,68.8 L 67.6,69.4 L 65.0,71.2 L 63.1,73.4 L 62.8,75.1 L 63.1,76.3 L 62.7,78.6 L 62.2,79.6 L 60.6,80.9 L 58.2,84.8 L 56.2,86.6 L 54.7,87.6 L 53.7,89.7 L 52.2,91.0 Z" fill="rgb(169,197,183)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Brazil</div>
+        <div class="country-pct" style="color:rgb(169,197,183);">2.7%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 25 100">
+          <path d="M 15.9,12.8 L 16.8,14.1 L 17.1,15.5 L 18.1,16.3 L 17.5,18.2 L 18.5,20.4 L 19.3,23.1 L 20.7,22.9 L 21.0,23.4 L 20.3,25.4 L 18.1,26.4 L 18.2,29.6 L 17.8,30.3 L 18.4,31.0 L 17.0,32.2 L 15.7,34.1 L 15.0,35.9 L 15.2,37.7 L 14.0,39.8 L 14.9,43.1 L 15.4,43.5 L 15.4,45.3 L 14.3,47.2 L 14.3,48.8 L 12.9,50.1 L 12.9,51.9 L 13.5,53.8 L 12.3,54.5 L 11.8,56.3 L 11.3,58.3 L 11.6,60.7 L 10.8,61.1 L 11.3,63.3 L 12.2,64.1 L 11.5,64.9 L 12.4,65.3 L 12.7,66.0 L 11.8,66.4 L 12.0,67.5 L 11.3,70.1 L 10.3,71.8 L 10.5,72.8 L 9.9,74.0 L 8.4,74.9 L 8.5,77.0 L 9.2,77.7 L 10.5,77.6 L 10.5,79.0 L 11.3,80.2 L 16.0,80.4 L 17.8,80.7 L 16.1,80.7 L 15.2,81.2 L 13.4,81.9 L 13.1,83.7 L 12.3,83.8 L 10.0,83.2 L 7.8,81.8 L 7.8,81.8 L 5.4,80.7 L 4.8,79.4 L 5.3,78.3 L 4.3,77.0 L 4.1,73.6 L 4.9,71.8 L 7.0,70.2 L 4.0,69.7 L 5.9,67.9 L 6.5,64.7 L 8.7,65.4 L 9.7,61.3 L 8.4,60.8 L 7.8,63.3 L 6.6,63.0 L 7.2,60.2 L 7.9,56.6 L 8.8,55.2 L 8.2,53.3 L 8.0,51.1 L 8.9,51.0 L 10.1,47.9 L 11.4,44.7 L 12.2,41.8 L 11.8,38.9 L 12.4,37.3 L 12.1,34.9 L 13.3,32.5 L 13.6,28.7 L 14.3,24.6 L 14.9,20.2 L 14.7,17.0 L 14.3,14.3 L 15.3,13.8 L 15.9,12.8 Z M 17.7,81.4 L 17.7,85.8 L 19.8,85.8 L 21.0,85.8 L 20.4,86.6 L 18.7,87.2 L 17.7,87.2 L 16.6,87.0 L 15.1,86.4 L 13.1,86.1 L 10.6,85.0 L 8.6,84.0 L 5.9,81.8 L 7.5,82.2 L 10.3,83.5 L 12.9,84.2 L 13.9,83.3 L 14.5,82.0 L 16.3,81.2 L 17.7,81.4 Z" fill="rgb(169,192,175)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Chile</div>
+        <div class="country-pct" style="color:rgb(169,192,175);">3.0%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 105 65">
+          <path d="M 5.0,4.6 L 8.5,4.3 L 12.5,4.0 L 12.2,4.6 L 17.0,6.1 L 24.1,8.3 L 30.4,8.3 L 32.8,8.3 L 32.8,7.0 L 38.3,7.0 L 39.4,8.1 L 41.0,9.1 L 42.9,10.5 L 43.9,12.1 L 44.7,13.9 L 46.3,14.8 L 48.9,15.8 L 50.9,13.3 L 53.5,13.2 L 55.7,14.5 L 57.2,16.6 L 58.3,18.5 L 60.2,20.2 L 60.9,22.4 L 61.7,23.9 L 64.2,24.9 L 66.4,25.6 L 67.6,25.5 L 66.4,28.2 L 65.9,30.5 L 65.6,34.7 L 65.3,36.2 L 65.9,37.9 L 66.9,39.5 L 67.5,41.9 L 69.6,44.2 L 70.3,46.0 L 71.5,47.6 L 74.9,48.4 L 76.2,49.7 L 78.9,48.8 L 81.3,48.5 L 83.6,47.9 L 85.6,47.4 L 87.6,46.1 L 88.4,44.3 L 88.6,41.7 L 89.2,40.7 L 91.3,39.9 L 94.6,39.2 L 97.4,39.3 L 99.3,39.0 L 100.0,39.7 L 99.9,41.2 L 98.2,43.1 L 97.5,45.0 L 98.1,45.5 L 97.6,46.9 L 96.8,49.3 L 96.0,48.5 L 95.4,48.6 L 94.8,48.6 L 93.6,50.5 L 93.1,50.1 L 92.7,50.3 L 92.7,50.8 L 89.8,50.7 L 86.9,50.7 L 86.9,52.5 L 85.5,52.5 L 86.6,53.5 L 87.8,54.3 L 88.1,54.9 L 88.6,55.1 L 88.6,56.2 L 84.5,56.2 L 83.0,58.8 L 83.5,59.4 L 83.1,60.1 L 83.0,61.0 L 79.5,57.6 L 77.9,56.6 L 75.3,55.8 L 73.6,56.0 L 71.0,57.2 L 69.5,57.5 L 67.3,56.7 L 64.9,56.1 L 62.0,54.6 L 59.6,54.2 L 56.1,52.7 L 53.5,51.2 L 52.7,50.4 L 50.9,50.2 L 47.7,49.2 L 46.4,47.8 L 43.0,46.0 L 41.5,44.0 L 40.7,42.5 L 41.8,42.2 L 41.4,41.3 L 42.2,40.5 L 42.2,39.4 L 41.1,38.0 L 40.8,36.8 L 39.8,35.2 L 37.0,32.1 L 33.9,29.6 L 32.3,27.7 L 29.6,26.4 L 29.1,25.6 L 29.5,23.7 L 27.9,22.9 L 26.1,21.4 L 25.3,19.2 L 23.6,19.0 L 21.8,17.3 L 20.3,15.8 L 20.2,14.8 L 18.5,12.5 L 17.4,10.1 L 17.5,8.9 L 15.2,7.6 L 14.1,7.8 L 12.4,6.9 L 11.8,8.2 L 12.4,9.7 L 12.7,12.0 L 13.7,13.3 L 16.1,15.5 L 16.6,16.2 L 17.1,16.4 L 17.5,17.5 L 18.0,17.5 L 18.7,19.5 L 19.6,20.3 L 20.3,21.4 L 22.3,23.0 L 23.3,25.9 L 24.2,27.3 L 25.1,28.8 L 25.3,30.4 L 26.8,30.5 L 28.0,31.9 L 29.2,33.3 L 29.1,33.9 L 27.8,35.0 L 27.2,35.0 L 26.4,33.1 L 24.3,31.3 L 22.1,29.8 L 20.5,29.0 L 20.6,26.7 L 20.1,25.0 L 18.6,24.1 L 16.5,22.7 L 16.1,23.1 L 15.3,22.2 L 13.3,21.5 L 11.5,19.7 L 11.7,19.4 L 13.0,19.6 L 14.2,18.4 L 14.3,17.0 L 11.9,14.8 L 10.0,13.9 L 8.9,12.0 L 7.7,9.9 L 6.3,7.4 L 5.0,4.6 Z" fill="rgb(169,192,175)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Mexico</div>
+        <div class="country-pct" style="color:rgb(169,192,175);">3.0%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 84 80">
+          <path d="M 79.8,23.0 L 80.0,24.0 L 79.1,24.5 L 79.3,26.1 L 77.4,25.6 L 74.1,27.4 L 74.2,28.9 L 72.7,31.1 L 72.6,32.3 L 71.4,34.5 L 69.4,33.9 L 69.3,36.6 L 68.7,37.5 L 69.0,38.6 L 67.7,39.2 L 66.3,35.1 L 65.6,35.1 L 65.2,36.7 L 63.8,35.4 L 64.6,33.9 L 65.7,33.8 L 66.9,31.6 L 65.4,31.1 L 63.0,31.2 L 60.5,30.8 L 60.3,29.0 L 59.1,28.9 L 57.0,27.7 L 56.1,29.5 L 58.0,30.9 L 56.3,31.8 L 55.8,32.8 L 57.4,33.5 L 56.9,35.1 L 57.8,37.0 L 58.2,39.2 L 57.9,40.1 L 56.1,40.1 L 52.9,40.6 L 53.0,42.6 L 51.6,44.1 L 47.9,45.9 L 45.0,48.9 L 43.0,50.6 L 40.4,52.3 L 40.4,53.5 L 39.1,54.1 L 36.8,55.0 L 35.6,55.2 L 34.8,57.1 L 35.4,60.5 L 35.5,62.7 L 34.4,65.2 L 34.4,69.6 L 33.0,69.7 L 31.8,71.7 L 32.6,72.5 L 30.3,73.3 L 29.4,75.0 L 28.3,75.8 L 25.9,73.4 L 24.7,69.7 L 23.7,67.1 L 22.8,65.9 L 21.4,63.4 L 20.7,60.1 L 20.3,58.5 L 17.9,54.9 L 16.9,49.9 L 16.1,46.6 L 16.1,43.4 L 15.6,41.0 L 11.8,42.5 L 10.0,42.2 L 6.6,39.1 L 7.8,38.1 L 7.1,37.1 L 4.0,34.9 L 5.7,33.2 L 11.5,33.2 L 10.9,30.9 L 9.5,29.6 L 9.2,27.6 L 7.5,26.4 L 10.3,23.7 L 13.4,23.9 L 16.1,21.2 L 17.7,18.6 L 20.2,15.9 L 20.2,14.1 L 22.4,12.6 L 20.3,11.3 L 19.4,9.5 L 18.5,7.3 L 19.8,6.1 L 23.7,6.8 L 26.6,6.4 L 29.1,4.2 L 31.9,7.3 L 31.7,9.4 L 32.7,10.7 L 32.6,12.0 L 30.7,11.7 L 31.5,14.6 L 34.0,16.2 L 37.6,18.0 L 36.0,19.2 L 35.0,21.6 L 37.5,22.6 L 39.9,23.9 L 43.3,25.3 L 46.9,25.7 L 48.4,27.0 L 50.4,27.3 L 53.5,27.9 L 55.7,27.8 L 56.0,26.8 L 55.7,25.1 L 55.9,24.0 L 57.4,23.5 L 57.7,25.5 L 57.7,26.0 L 60.1,27.0 L 61.7,26.6 L 63.9,26.8 L 66.0,26.7 L 66.2,25.1 L 65.2,24.3 L 67.3,24.0 L 69.6,22.0 L 72.6,20.4 L 74.8,21.0 L 76.7,19.9 L 77.9,21.5 L 77.0,22.6 L 79.8,23.0 Z" fill="rgb(169,190,172)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">India</div>
+        <div class="country-pct" style="color:rgb(169,190,172);">3.1%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 103 80">
+          <path d="M 4.9,40.7 L 7.6,37.9 L 9.8,39.4 L 10.8,41.9 L 13.3,42.3 L 16.9,43.3 L 19.9,42.9 L 25.0,40.0 L 25.0,19.1 L 26.5,20.0 L 29.8,25.4 L 29.3,28.8 L 30.6,30.8 L 34.6,30.2 L 37.5,27.7 L 40.1,26.0 L 41.5,23.3 L 44.3,22.0 L 46.7,22.7 L 49.4,24.2 L 54.0,24.5 L 57.6,23.2 L 58.2,21.4 L 59.2,18.7 L 62.2,18.3 L 63.9,16.2 L 65.8,12.4 L 70.9,8.2 L 78.9,4.0 L 81.2,4.1 L 83.9,5.0 L 85.9,4.3 L 88.9,4.9 L 91.6,12.9 L 93.0,16.9 L 92.0,23.2 L 92.5,25.2 L 89.7,24.2 L 88.0,24.6 L 87.5,26.2 L 85.9,28.4 L 86.0,30.3 L 89.4,33.4 L 92.7,32.8 L 93.8,30.3 L 98.1,30.3 L 96.7,34.4 L 96.0,39.1 L 94.6,41.7 L 90.7,44.5 L 89.6,45.4 L 87.2,48.2 L 85.6,51.1 L 82.4,55.2 L 76.0,61.0 L 72.0,64.4 L 67.8,67.0 L 61.9,69.2 L 59.0,69.5 L 58.2,71.1 L 54.8,70.2 L 52.0,71.3 L 45.9,70.2 L 42.5,70.9 L 40.1,70.6 L 34.3,72.8 L 29.4,73.7 L 26.0,75.9 L 23.4,76.0 L 21.0,74.0 L 19.1,73.9 L 16.6,71.4 L 16.4,72.1 L 15.6,70.6 L 15.6,67.3 L 13.8,63.5 L 15.6,62.5 L 15.5,58.1 L 11.8,52.8 L 8.9,48.1 L 8.9,48.0 L 4.9,40.7 Z" fill="rgb(170,180,156)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">South Africa</div>
+        <div class="country-pct" style="color:rgb(170,180,156);">3.7%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 55 80">
+          <path d="M 46.5,21.9 L 43.1,21.7 L 42.7,22.3 L 39.6,23.0 L 35.4,25.5 L 35.1,27.2 L 34.2,28.5 L 34.6,30.5 L 32.3,31.6 L 32.3,33.1 L 31.4,33.8 L 32.9,37.1 L 35.0,39.4 L 34.2,41.0 L 36.6,41.2 L 38.0,43.1 L 41.3,43.2 L 44.3,41.1 L 44.1,46.7 L 45.7,47.1 L 47.8,46.4 L 51.0,52.4 L 50.2,53.6 L 50.0,56.2 L 50.0,59.4 L 48.5,61.2 L 49.2,62.6 L 48.3,63.8 L 49.9,66.9 L 47.6,70.9 L 46.6,72.8 L 44.7,73.7 L 41.0,71.6 L 40.7,70.1 L 33.4,66.4 L 26.8,62.4 L 23.9,60.1 L 22.4,57.0 L 23.0,56.0 L 19.9,51.1 L 16.2,44.3 L 12.8,37.0 L 11.2,35.3 L 10.1,32.6 L 7.2,30.2 L 4.6,28.7 L 5.8,27.0 L 4.0,23.5 L 5.1,20.9 L 8.1,18.6 L 8.5,20.2 L 7.5,21.0 L 7.6,22.4 L 9.1,22.1 L 10.6,22.5 L 12.1,24.4 L 14.2,22.8 L 14.9,20.3 L 17.2,17.1 L 21.6,15.7 L 25.6,11.8 L 26.8,9.4 L 26.3,6.6 L 27.2,6.3 L 29.7,8.0 L 30.9,9.8 L 32.6,10.7 L 34.8,14.6 L 37.5,15.0 L 39.5,14.1 L 40.9,14.7 L 43.1,14.4 L 45.9,16.1 L 43.5,19.9 L 44.6,20.0 L 46.5,21.9 Z" fill="rgb(173,135,87)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Peru</div>
+        <div class="country-pct" style="color:rgb(173,135,87);">6.3%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 76 80">
+          <path d="M 57.9,69.3 L 32.5,70.3 L 18.8,70.1 L 14.5,71.6 L 7.0,75.5 L 4.0,74.2 L 4.1,64.8 L 7.0,60.0 L 7.7,50.0 L 10.3,44.2 L 15.1,37.8 L 19.9,34.4 L 23.9,30.0 L 18.9,28.3 L 19.6,13.8 L 19.6,13.8 L 24.8,10.4 L 32.7,13.1 L 42.7,10.2 L 51.5,10.3 L 59.2,4.5 L 65.1,13.2 L 66.5,19.4 L 72.0,33.7 L 67.5,42.8 L 61.3,51.1 L 57.8,56.1 L 57.9,69.3 Z" fill="rgb(174,130,79)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Uganda</div>
+        <div class="country-pct" style="color:rgb(174,130,79);">6.6%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 115 80">
+          <path d="M 20.9,54.7 L 14.0,41.5 L 5.5,35.5 L 13.0,32.3 L 21.1,20.5 L 25.2,11.8 L 30.9,6.4 L 39.3,7.9 L 47.6,4.2 L 57.0,4.0 L 65.0,9.0 L 76.2,13.4 L 86.5,25.8 L 97.6,37.4 L 98.4,47.9 L 101.7,57.6 L 108.0,62.3 L 109.5,68.9 L 108.7,74.1 L 106.2,75.1 L 97.0,73.7 L 95.8,75.6 L 92.1,76.0 L 79.9,71.9 L 71.8,71.7 L 40.6,71.0 L 36.1,72.9 L 30.5,72.4 L 21.5,75.1 L 18.8,62.2 L 34.1,62.5 L 38.2,60.2 L 41.2,60.0 L 47.5,56.1 L 54.7,59.7 L 62.0,60.0 L 69.3,56.2 L 65.9,51.3 L 60.4,54.2 L 55.1,54.1 L 48.5,49.9 L 43.1,50.2 L 39.3,54.2 L 20.9,54.7 Z" fill="rgb(174,126,73)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">Senegal</div>
+        <div class="country-pct" style="color:rgb(174,126,73);">6.8%</div>
+      </div>
+      <div class="country-block">
+        <svg class="country-svg" viewBox="0 0 60 40">
+          <path d="M 20.3,6.0 L 26.7,7.9 L 31.5,12.2 L 38.1,15.8 L 38.9,18.7 L 48.5,16.1 L 53.0,17.7 L 56.0,20.0 L 54.5,28.8 L 52.0,34.0 L 39.3,33.6 L 31.5,31.5 L 22.4,27.2 L 10.2,25.8 L 4.0,21.1 L 4.7,17.9 L 12.2,12.4 L 16.3,10.0 L 15.1,7.4 L 20.3,6.0 Z" fill="rgb(176,106,42)" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
+        </svg>
+        <div class="country-name">El Salvador</div>
+        <div class="country-pct" style="color:rgb(176,106,42);">8.0%</div>
+      </div>
+
+    </div>
+
+    <!-- Colour scale legend -->
+    <div style="display:flex; align-items:center; gap:1.4vmin; margin-top:2vmin;">
+      <span style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); color:var(--sand); opacity:0.7;">Lower share</span>
+      <div style="width:clamp(120px,15vmin,220px); height:clamp(6px,0.8vmin,10px); border-radius:4px; background: linear-gradient(to right, #a8d5cf, #b06a2a);"></div>
+      <span style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); color:var(--sand); opacity:0.7;">Higher share</span>
+    </div>
+    <div style="margin-top:10px;">
+      <span style="font-family:'Lora',serif; font-size:clamp(0.7rem,0.8vw,0.9rem); color:var(--sand); opacity:0.45;">Source: WIEGO Statistical Brief, July 2024</span>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 3 — INDIA MAP (placeholder)
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-placeholder-map" data-duration="25">
+    <div class="map-area" style="display:flex;align-items:center;justify-content:center;background:#122624;padding:20px;">
+      <svg viewBox="0 0 500 580" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+  <rect width="500" height="580" fill="transparent"/>
+  <path d="M 414.4,436.2 L 415.6,443.3 L 414.7,444.7 L 414.6,444.5 L 414.1,444.1 L 414.2,444.0 L 413.4,443.3 L 413.6,443.9 L 414.4,444.6 L 412.7,443.7 L 414.4,446.1 L 412.3,446.1 L 411.5,446.5 L 410.9,441.4 L 412.6,440.4 L 411.7,440.4 L 411.9,439.6 L 411.6,437.9 L 412.5,438.2 L 412.7,436.9 L 413.0,436.7 L 413.5,437.1 L 414.0,437.0 L 414.4,436.7 L 414.4,436.2 Z M 416.6,425.7 L 416.5,429.0 L 417.0,428.8 L 417.5,429.6 L 417.1,430.1 L 416.8,429.1 L 415.3,429.5 L 416.3,430.6 L 417.2,430.6 L 416.6,432.1 L 416.6,433.7 L 415.7,434.9 L 415.0,433.7 L 414.3,434.1 L 414.7,434.2 L 414.5,434.7 L 414.6,435.1 L 415.1,435.5 L 414.2,435.3 L 413.7,436.2 L 414.0,437.0 L 413.5,437.1 L 412.6,434.8 L 413.5,428.5 L 413.9,428.5 L 414.2,428.1 L 414.0,427.4 L 414.9,426.9 L 414.7,426.3 L 415.9,426.5 L 416.6,425.7 Z M 411.2,447.5 L 411.8,450.3 L 412.5,450.6 L 411.8,450.7 L 410.9,454.3 L 411.9,452.5 L 412.6,453.0 L 412.1,456.2 L 411.2,456.1 L 410.6,457.0 L 412.1,456.8 L 411.4,459.9 L 408.1,453.8 L 408.9,452.2 L 409.7,453.5 L 411.2,447.5 Z M 429.9,528.9 L 431.5,532.8 L 429.6,536.8 L 429.2,536.6 L 429.4,535.8 L 428.2,533.4 L 426.9,532.7 L 426.8,530.8 L 429.9,528.9 Z M 408.2,469.3 L 409.4,471.1 L 409.1,474.5 L 408.1,475.6 L 406.1,475.3 L 405.9,471.2 L 408.2,469.3 Z M 412.4,446.3 L 414.3,447.0 L 414.1,447.3 L 413.9,447.3 L 413.8,447.4 L 414.1,448.2 L 412.2,450.3 L 412.4,446.3 Z M 424.6,512.8 L 425.0,515.9 L 424.2,516.6 L 423.5,513.7 L 424.6,512.8 Z M 422.3,516.1 L 423.6,517.7 L 423.6,518.6 L 421.2,517.6 L 422.3,516.1 Z M 427.7,525.6 L 428.4,526.9 L 426.6,528.9 L 426.4,526.8 L 427.7,526.4 L 427.7,525.6 Z M 410.2,459.3 L 411.0,461.6 L 409.6,462.0 L 409.3,461.1 L 410.2,459.3 Z M 412.6,496.3 L 413.3,498.0 L 411.7,498.2 L 411.5,496.7 L 412.6,496.3 Z M 411.1,435.2 L 411.5,436.9 L 410.7,438.6 L 410.0,437.0 L 410.6,437.0 L 411.1,435.2 Z M 414.9,451.4 L 416.2,451.0 L 416.8,453.3 L 414.9,451.4 Z M 416.5,448.8 L 416.9,450.1 L 416.8,450.6 L 416.2,449.6 L 415.3,449.0 L 416.5,448.8 Z M 417.2,447.9 L 417.6,449.0 L 417.3,450.0 L 416.7,449.2 L 417.2,447.9 Z M 418.1,510.7 L 418.1,512.0 L 419.3,513.4 L 417.5,512.1 L 418.1,510.7 Z M 424.3,516.8 L 425.6,516.7 L 425.5,517.7 L 424.3,516.8 Z M 403.3,459.0 L 404.2,458.1 L 404.2,459.1 L 403.3,459.0 Z M 415.4,449.6 L 416.2,449.7 L 416.0,450.6 L 415.4,449.6 Z M 429.5,447.4 L 430.3,446.7 L 430.4,447.5 L 429.5,447.4 Z M 411.6,448.3 L 411.7,447.9 L 412.2,447.6 L 412.2,448.4 L 411.6,448.3 Z M 417.1,447.6 L 417.8,447.1 L 417.7,448.0 L 417.1,447.6 Z M 421.8,416.4 L 422.2,416.4 L 422.0,417.8 L 421.8,416.4 Z M 426.1,507.2 L 426.5,508.9 L 426.2,509.7 L 426.3,508.6 L 426.1,507.2 Z M 408.4,458.0 L 409.1,458.1 L 408.4,458.6 L 408.4,458.0 Z M 415.4,435.2 L 415.8,436.1 L 415.3,436.0 L 415.4,435.2 Z M 411.1,438.4 L 411.4,438.7 L 411.6,439.2 L 411.5,439.6 L 411.1,438.4 Z M 413.5,444.9 L 414.3,444.7 L 414.2,445.3 L 413.5,444.9 Z M 415.4,444.3 L 415.0,445.5 L 414.8,445.4 L 415.4,444.3 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 241.9,374.2 L 239.7,374.4 L 241.9,376.9 L 236.0,379.8 L 232.3,381.1 L 229.4,380.3 L 227.2,380.6 L 226.8,380.3 L 226.5,380.3 L 220.0,390.6 L 217.7,390.9 L 217.4,388.8 L 216.9,388.4 L 215.5,388.1 L 208.7,391.5 L 205.6,397.3 L 205.7,398.9 L 205.0,399.1 L 205.1,401.2 L 205.3,405.4 L 207.5,409.2 L 206.3,416.9 L 209.4,428.0 L 206.7,423.3 L 206.5,425.1 L 206.0,423.5 L 205.1,425.5 L 206.2,426.8 L 208.6,427.4 L 209.4,429.0 L 208.0,427.3 L 204.4,426.4 L 203.1,429.6 L 199.7,430.6 L 200.1,431.9 L 198.9,430.5 L 197.4,431.1 L 195.0,429.8 L 194.1,430.1 L 194.9,432.0 L 193.0,433.5 L 191.6,432.9 L 190.5,434.9 L 187.7,433.8 L 186.8,434.8 L 186.0,433.7 L 183.1,434.1 L 181.7,435.4 L 180.6,440.2 L 179.6,439.4 L 179.1,441.4 L 177.7,441.4 L 174.8,440.3 L 175.6,437.5 L 177.3,436.2 L 179.1,437.5 L 178.6,435.6 L 181.1,430.8 L 177.7,429.8 L 178.1,425.6 L 174.7,426.0 L 174.2,424.5 L 173.0,424.7 L 173.4,421.2 L 170.8,421.7 L 171.4,419.6 L 168.7,419.8 L 167.0,423.1 L 166.0,422.4 L 162.7,424.1 L 162.3,421.5 L 158.3,421.1 L 158.3,420.1 L 158.1,422.8 L 155.3,423.0 L 156.0,420.0 L 153.6,416.2 L 155.7,416.0 L 155.8,417.9 L 157.8,418.9 L 160.5,418.4 L 161.9,420.7 L 162.4,419.3 L 160.7,418.4 L 161.9,417.1 L 161.1,416.7 L 163.6,416.3 L 163.5,414.5 L 161.7,413.5 L 161.7,415.6 L 160.0,413.4 L 157.9,413.3 L 157.1,415.3 L 154.4,414.9 L 153.5,412.4 L 155.0,411.0 L 153.3,411.1 L 151.5,409.1 L 153.2,403.5 L 151.6,403.0 L 151.7,401.5 L 156.7,402.5 L 157.9,400.5 L 158.1,398.3 L 154.9,394.5 L 155.9,392.2 L 157.4,392.1 L 155.8,388.9 L 156.5,387.8 L 163.7,387.5 L 163.4,382.1 L 165.0,380.7 L 159.2,378.6 L 163.0,376.7 L 162.2,375.4 L 163.5,369.8 L 161.6,366.3 L 163.7,362.9 L 166.6,361.9 L 162.6,360.4 L 166.1,354.1 L 164.3,352.7 L 165.2,349.1 L 164.0,346.4 L 165.1,344.7 L 167.4,344.6 L 169.1,340.5 L 170.8,340.2 L 167.7,336.9 L 169.2,335.8 L 169.4,332.4 L 170.9,331.8 L 174.5,333.5 L 174.7,330.6 L 176.7,329.9 L 176.1,326.5 L 177.7,324.6 L 176.8,322.4 L 179.7,324.4 L 185.5,325.0 L 185.7,326.6 L 187.5,326.7 L 187.3,328.3 L 190.9,329.8 L 192.0,327.3 L 195.7,329.2 L 201.2,328.0 L 203.8,330.8 L 203.4,334.5 L 202.0,335.6 L 203.2,337.0 L 202.8,340.5 L 206.1,342.6 L 208.6,341.9 L 209.9,344.1 L 212.2,343.4 L 214.6,345.2 L 217.1,349.5 L 216.3,350.8 L 217.8,349.8 L 218.3,351.4 L 220.1,350.9 L 221.3,357.1 L 223.2,356.0 L 230.5,356.6 L 237.3,352.7 L 241.1,353.9 L 242.8,351.4 L 241.9,350.4 L 243.3,348.6 L 242.3,348.4 L 242.8,346.9 L 244.6,344.9 L 247.1,349.9 L 249.9,346.4 L 251.6,347.8 L 254.0,347.5 L 253.4,346.4 L 254.6,344.8 L 253.3,343.2 L 255.3,341.0 L 256.5,341.9 L 259.6,340.1 L 258.1,337.5 L 260.6,338.2 L 260.6,336.2 L 261.8,337.2 L 263.3,334.8 L 265.3,338.6 L 266.0,337.2 L 267.3,340.3 L 270.8,341.5 L 274.5,340.9 L 276.4,338.7 L 276.2,337.1 L 278.7,336.3 L 279.1,337.1 L 280.3,336.2 L 279.1,335.3 L 280.9,334.9 L 281.6,336.5 L 271.5,348.6 L 262.5,353.3 L 257.5,358.3 L 256.6,360.3 L 246.8,365.1 L 242.9,368.0 L 240.9,371.0 L 242.6,372.3 L 242.7,370.5 L 242.8,371.5 L 242.5,374.2 L 241.9,374.2 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 466.3,166.9 L 468.9,170.6 L 471.3,170.2 L 466.8,173.1 L 467.7,175.9 L 473.5,173.1 L 472.7,174.5 L 475.0,178.0 L 469.2,184.0 L 471.5,185.1 L 475.8,183.1 L 481.2,185.5 L 482.7,184.7 L 487.8,187.4 L 486.3,189.4 L 488.0,190.3 L 487.6,192.4 L 485.4,192.2 L 479.6,196.9 L 479.8,199.4 L 483.6,205.3 L 479.1,203.7 L 478.0,201.2 L 475.1,200.9 L 473.5,202.2 L 466.6,203.2 L 460.6,208.8 L 457.3,209.7 L 455.6,211.9 L 452.5,212.1 L 451.8,206.3 L 456.1,204.8 L 457.1,202.6 L 463.2,202.7 L 465.3,200.9 L 462.5,200.0 L 463.0,198.0 L 461.0,195.1 L 464.6,191.2 L 458.5,191.4 L 439.9,197.9 L 436.5,196.5 L 436.6,198.5 L 429.2,204.5 L 429.7,205.8 L 424.0,208.0 L 416.4,208.3 L 410.5,206.4 L 409.3,207.6 L 401.5,208.7 L 400.2,204.3 L 400.4,202.6 L 401.7,202.3 L 400.1,199.2 L 394.1,199.1 L 392.6,197.5 L 393.9,194.6 L 392.5,193.0 L 396.9,193.8 L 398.5,195.3 L 403.2,193.0 L 404.9,194.3 L 408.9,193.6 L 411.8,190.9 L 411.0,188.6 L 419.6,185.3 L 419.0,183.5 L 421.6,180.3 L 431.2,179.7 L 435.9,173.0 L 441.5,170.7 L 442.6,168.7 L 445.4,171.7 L 455.3,173.8 L 457.6,172.3 L 457.4,170.9 L 461.3,168.6 L 466.3,166.9 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 464.2,191.6 L 461.0,195.1 L 463.0,198.0 L 462.5,200.0 L 465.2,201.0 L 463.2,202.7 L 457.0,202.6 L 456.1,204.8 L 449.0,208.2 L 446.9,208.0 L 444.7,210.7 L 440.0,212.4 L 437.5,215.7 L 436.9,214.2 L 432.4,220.5 L 432.0,224.6 L 429.0,226.3 L 428.7,223.8 L 421.5,230.7 L 423.6,232.5 L 423.8,234.5 L 420.1,239.3 L 419.3,242.6 L 417.9,242.7 L 416.7,249.2 L 413.3,249.7 L 412.2,247.4 L 407.4,253.7 L 406.7,251.7 L 403.2,251.8 L 404.6,243.9 L 403.7,241.2 L 407.8,241.6 L 406.7,239.6 L 407.7,237.8 L 412.9,236.0 L 412.6,234.2 L 409.0,232.0 L 410.4,229.9 L 409.1,230.4 L 406.1,227.3 L 402.4,228.6 L 403.5,224.8 L 402.3,224.2 L 402.5,223.8 L 403.4,223.3 L 404.6,222.0 L 398.5,223.3 L 396.8,221.3 L 394.4,224.8 L 392.9,222.7 L 391.2,225.4 L 392.1,225.1 L 392.0,225.3 L 388.9,225.9 L 387.1,227.8 L 386.7,225.6 L 383.5,226.2 L 384.0,225.1 L 382.6,224.1 L 377.4,224.9 L 376.7,223.9 L 375.5,225.0 L 375.0,223.0 L 369.1,223.9 L 365.4,227.6 L 367.5,229.8 L 365.1,230.7 L 364.2,226.3 L 365.4,224.3 L 362.2,220.2 L 362.6,218.3 L 364.9,217.0 L 365.0,211.3 L 369.3,211.1 L 370.7,209.4 L 373.9,208.6 L 378.6,210.8 L 394.7,210.2 L 397.5,208.4 L 400.7,209.5 L 409.3,207.6 L 410.5,206.4 L 416.4,208.3 L 426.7,207.5 L 436.6,198.5 L 436.5,196.5 L 439.9,197.9 L 458.5,191.4 L 464.2,191.6 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 271.4,198.6 L 274.3,200.7 L 279.6,201.5 L 280.7,203.5 L 280.0,206.2 L 285.2,207.6 L 286.1,209.3 L 289.0,209.2 L 289.2,210.9 L 296.1,209.1 L 299.6,214.0 L 302.5,212.4 L 307.4,213.2 L 314.0,216.4 L 319.5,213.7 L 319.9,215.9 L 323.9,217.6 L 326.0,216.1 L 328.2,217.1 L 332.8,215.4 L 335.1,217.3 L 336.3,214.6 L 338.4,214.3 L 337.5,215.3 L 339.2,217.8 L 334.0,220.8 L 331.4,224.6 L 335.4,228.3 L 335.8,231.7 L 333.4,230.8 L 331.1,232.3 L 332.0,236.3 L 327.8,233.9 L 326.2,234.8 L 326.0,236.4 L 323.6,235.9 L 323.1,238.1 L 320.7,239.2 L 319.1,246.0 L 317.2,245.4 L 316.9,247.1 L 314.7,245.8 L 311.9,246.0 L 309.4,249.9 L 306.6,248.3 L 307.3,246.3 L 304.2,246.0 L 302.9,243.2 L 301.2,243.9 L 297.7,242.5 L 296.6,246.4 L 290.3,247.3 L 287.2,249.7 L 287.0,248.7 L 284.1,249.8 L 282.4,247.2 L 280.2,249.4 L 277.9,249.7 L 277.5,251.2 L 274.2,248.5 L 274.2,246.6 L 271.2,248.0 L 269.3,245.5 L 267.3,247.2 L 261.3,247.3 L 262.0,245.7 L 259.5,243.1 L 258.3,239.3 L 258.9,236.3 L 266.8,232.5 L 271.0,227.8 L 274.1,228.8 L 274.8,227.4 L 277.4,228.5 L 279.7,227.7 L 278.1,225.3 L 270.2,221.7 L 269.5,219.5 L 272.0,219.3 L 272.2,217.2 L 267.9,215.9 L 270.8,212.8 L 276.2,213.1 L 273.3,211.2 L 273.4,209.2 L 270.3,208.7 L 268.2,201.8 L 266.7,201.7 L 267.9,200.9 L 267.3,200.0 L 271.4,198.6 Z" fill="#ebb978" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 152.5,146.9 L 151.0,146.8 L 150.4,145.7 L 152.1,145.3 L 152.5,146.9 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 258.5,254.2 L 261.4,255.4 L 262.3,258.1 L 264.5,258.8 L 265.8,262.4 L 268.4,263.0 L 269.6,261.8 L 268.9,265.9 L 270.6,266.8 L 270.0,269.9 L 271.9,272.7 L 272.5,271.8 L 275.5,272.6 L 275.6,274.2 L 273.0,277.5 L 269.5,279.2 L 269.5,282.5 L 263.2,285.2 L 261.8,287.9 L 262.7,291.0 L 260.8,292.0 L 260.0,293.7 L 261.1,294.5 L 259.4,294.8 L 258.6,296.7 L 259.7,299.1 L 257.6,298.6 L 256.3,302.5 L 247.2,302.3 L 244.3,307.6 L 242.5,306.6 L 242.1,312.0 L 243.9,314.1 L 243.2,320.1 L 248.4,321.2 L 248.5,323.5 L 246.4,324.8 L 246.5,323.2 L 244.0,322.6 L 242.4,323.8 L 240.6,321.1 L 237.3,320.9 L 235.9,319.4 L 234.8,320.3 L 234.4,322.5 L 237.8,324.6 L 237.2,329.1 L 239.8,330.5 L 239.5,335.3 L 240.8,338.8 L 238.1,342.0 L 235.0,343.0 L 236.0,344.5 L 232.7,348.0 L 229.2,349.4 L 226.8,356.8 L 223.2,356.0 L 221.2,357.1 L 220.1,350.9 L 218.3,351.4 L 217.8,349.8 L 216.3,350.8 L 217.1,349.5 L 216.1,346.9 L 212.2,343.4 L 209.8,344.0 L 208.2,341.4 L 210.0,340.3 L 208.6,337.5 L 210.5,333.4 L 213.5,330.8 L 214.2,332.3 L 216.5,332.6 L 218.1,331.4 L 217.1,330.4 L 218.8,329.7 L 215.0,327.3 L 213.1,324.0 L 210.7,324.4 L 212.4,323.2 L 210.9,322.1 L 212.8,322.2 L 213.2,320.0 L 210.7,318.7 L 210.5,317.1 L 214.3,315.6 L 214.4,311.2 L 212.1,311.0 L 213.7,309.9 L 213.1,305.8 L 211.2,304.6 L 211.7,302.0 L 215.2,299.9 L 216.0,293.1 L 217.5,292.6 L 219.0,286.6 L 220.6,287.3 L 222.4,281.3 L 225.8,279.9 L 227.0,281.3 L 230.6,279.7 L 233.0,277.6 L 233.1,274.2 L 235.9,272.8 L 235.9,270.9 L 239.3,269.8 L 239.9,266.8 L 236.5,265.4 L 235.5,263.5 L 230.5,263.9 L 229.9,262.6 L 231.8,260.4 L 230.5,257.4 L 233.3,258.9 L 235.5,257.9 L 245.3,259.4 L 249.9,256.5 L 252.3,257.9 L 255.2,257.7 L 258.5,254.2 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 89.0,316.6 L 91.9,315.2 L 93.1,315.9 L 91.3,317.7 L 94.0,318.0 L 93.5,320.0 L 90.0,319.2 L 89.0,316.6 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 53.9,305.4 L 56.1,306.3 L 54.7,307.2 L 56.0,307.6 L 55.0,309.8 L 52.4,308.7 L 53.9,305.4 Z M 87.5,313.8 L 88.2,314.8 L 87.3,315.0 L 87.5,313.8 Z M 56.1,309.2 L 57.6,309.4 L 55.9,309.5 L 56.1,309.2 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 159.0,177.1 L 160.9,180.6 L 159.3,183.7 L 152.8,181.6 L 154.3,180.3 L 154.5,177.3 L 156.6,176.3 L 159.0,177.1 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 104.6,389.8 L 106.6,392.6 L 110.7,391.8 L 112.1,397.7 L 110.7,398.3 L 111.5,401.8 L 110.0,403.8 L 107.2,403.8 L 105.1,401.1 L 104.7,396.8 L 103.0,395.8 L 104.5,396.0 L 104.9,395.7 L 103.1,395.0 L 101.3,390.7 L 104.6,389.8 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 74.8,244.4 L 79.7,245.8 L 78.0,246.4 L 81.2,247.6 L 81.5,249.2 L 82.8,247.6 L 85.3,248.4 L 85.9,250.0 L 89.0,250.5 L 90.5,248.0 L 91.9,247.9 L 91.6,249.4 L 94.0,249.9 L 91.6,252.8 L 94.3,255.7 L 96.3,253.8 L 97.2,257.0 L 96.2,259.3 L 98.5,260.7 L 98.6,262.1 L 101.0,262.0 L 100.6,264.8 L 103.8,264.9 L 104.8,266.7 L 105.9,265.9 L 108.3,267.4 L 108.6,269.2 L 110.5,269.1 L 112.4,273.2 L 114.3,274.5 L 112.7,278.0 L 110.9,277.9 L 109.0,280.0 L 107.3,279.6 L 108.5,281.6 L 109.6,280.7 L 111.3,282.0 L 109.6,283.2 L 107.7,282.6 L 109.5,287.0 L 108.1,288.2 L 109.0,289.1 L 103.5,291.3 L 104.9,293.9 L 103.1,294.6 L 104.3,296.7 L 111.6,295.5 L 111.9,296.7 L 107.6,296.9 L 105.8,298.2 L 105.7,299.9 L 103.8,300.4 L 103.6,301.9 L 99.8,302.0 L 105.0,305.0 L 105.7,308.9 L 101.2,311.9 L 97.6,309.5 L 96.8,310.6 L 98.4,312.2 L 96.6,314.7 L 97.2,317.7 L 95.3,317.6 L 94.5,319.0 L 93.2,317.6 L 91.4,318.4 L 93.2,316.3 L 92.0,315.1 L 89.0,316.5 L 89.7,317.6 L 86.0,318.8 L 86.6,315.6 L 88.2,314.8 L 88.4,308.8 L 85.7,302.4 L 85.1,302.2 L 84.8,302.2 L 84.7,303.3 L 84.2,303.5 L 84.6,301.0 L 83.5,300.2 L 85.3,297.2 L 84.5,297.7 L 84.9,296.3 L 86.0,296.0 L 86.0,295.9 L 86.0,295.8 L 85.1,295.9 L 84.1,296.7 L 83.7,295.7 L 87.6,293.9 L 82.7,293.9 L 83.2,291.3 L 82.1,289.2 L 83.4,285.2 L 86.3,285.6 L 87.1,284.4 L 88.3,284.8 L 88.8,284.5 L 88.9,283.9 L 82.8,283.9 L 81.9,285.2 L 82.0,284.4 L 81.6,284.6 L 81.0,283.5 L 80.3,283.4 L 80.7,282.6 L 80.4,282.2 L 79.8,282.3 L 80.7,284.7 L 79.8,284.0 L 79.6,286.4 L 79.1,286.1 L 79.1,285.5 L 78.7,285.1 L 79.0,285.5 L 79.0,286.1 L 79.2,286.3 L 78.5,289.5 L 77.9,287.6 L 78.8,287.4 L 78.8,286.7 L 76.8,287.8 L 77.6,289.2 L 76.3,288.7 L 78.1,290.1 L 78.3,292.7 L 78.0,291.8 L 77.3,291.3 L 77.2,291.3 L 77.0,291.2 L 77.0,291.3 L 76.9,291.3 L 78.9,294.5 L 75.2,299.8 L 75.8,301.5 L 58.5,309.1 L 55.6,309.5 L 56.0,307.6 L 54.7,307.2 L 55.8,305.6 L 53.4,304.9 L 52.2,308.8 L 43.0,303.0 L 36.7,296.1 L 37.5,295.3 L 37.1,294.1 L 36.4,295.1 L 36.4,294.7 L 35.4,294.3 L 36.7,295.9 L 34.7,294.6 L 24.0,283.4 L 26.2,280.6 L 26.2,282.0 L 28.2,281.5 L 27.7,283.3 L 28.9,284.2 L 33.0,282.9 L 33.2,281.3 L 34.5,283.2 L 36.9,280.7 L 38.1,281.9 L 38.7,280.3 L 39.3,281.2 L 41.0,279.6 L 44.0,279.5 L 45.3,277.6 L 45.5,277.2 L 45.3,277.0 L 45.5,276.9 L 45.5,276.5 L 46.3,276.1 L 47.1,274.3 L 48.3,273.2 L 49.1,271.9 L 49.4,270.9 L 48.5,271.1 L 47.9,271.7 L 47.0,273.3 L 43.4,272.8 L 43.5,272.3 L 43.7,272.0 L 43.9,271.8 L 43.9,271.7 L 43.9,271.7 L 42.9,272.9 L 43.5,273.4 L 38.1,274.6 L 36.6,276.6 L 35.4,275.5 L 32.7,275.8 L 28.2,274.7 L 19.5,269.7 L 18.3,268.3 L 18.5,268.2 L 18.6,268.6 L 19.1,268.7 L 19.7,267.7 L 19.1,267.3 L 20.6,267.3 L 21.0,267.2 L 21.1,266.8 L 19.4,267.2 L 19.2,266.5 L 18.7,265.9 L 17.9,265.8 L 17.9,265.3 L 17.5,265.3 L 17.2,264.2 L 16.8,264.0 L 16.9,261.5 L 21.2,257.9 L 18.6,258.3 L 17.3,259.8 L 17.2,258.7 L 19.6,257.2 L 17.7,256.5 L 21.0,256.5 L 21.4,251.1 L 23.2,252.7 L 24.2,251.4 L 25.1,252.2 L 34.9,251.3 L 36.9,253.0 L 41.4,253.1 L 43.3,251.1 L 50.7,249.0 L 50.7,251.7 L 54.5,252.2 L 59.8,249.3 L 57.8,248.7 L 57.6,247.0 L 59.4,244.8 L 62.5,246.0 L 66.4,244.8 L 70.7,244.9 L 71.6,246.0 L 71.9,244.9 L 73.0,245.6 L 74.8,244.4 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 151.5,143.6 L 157.9,146.9 L 157.2,148.9 L 158.7,150.3 L 162.8,150.5 L 162.5,151.5 L 163.7,150.8 L 165.1,152.1 L 162.2,156.4 L 159.8,157.3 L 157.3,161.8 L 157.4,172.7 L 159.0,176.0 L 154.5,177.3 L 154.3,180.3 L 152.7,181.2 L 153.4,182.4 L 156.6,182.2 L 158.1,184.0 L 160.9,182.4 L 163.1,184.0 L 164.1,191.5 L 159.2,194.2 L 156.0,193.6 L 156.7,195.0 L 155.3,194.9 L 154.9,196.3 L 153.5,195.6 L 154.8,188.3 L 153.2,187.0 L 147.9,191.2 L 147.9,190.1 L 146.5,189.9 L 146.8,188.2 L 143.8,187.7 L 144.6,190.2 L 142.0,189.7 L 141.6,190.7 L 142.8,193.3 L 138.5,192.9 L 137.9,191.8 L 139.7,189.5 L 138.1,189.2 L 140.6,188.2 L 137.9,184.7 L 135.4,184.1 L 131.9,180.7 L 130.4,175.6 L 131.2,174.2 L 128.7,172.1 L 129.3,170.1 L 124.1,170.6 L 120.2,167.8 L 116.2,169.1 L 115.2,167.1 L 116.5,165.8 L 116.4,162.1 L 114.1,161.6 L 115.6,160.3 L 115.1,158.9 L 117.1,159.7 L 119.6,158.2 L 122.7,160.5 L 124.2,159.5 L 124.3,161.3 L 125.8,160.7 L 126.6,162.2 L 125.4,163.6 L 126.5,165.5 L 130.1,161.2 L 132.1,162.3 L 135.4,161.0 L 139.8,162.2 L 143.1,160.2 L 141.8,159.3 L 143.3,156.4 L 142.4,155.5 L 144.4,156.3 L 145.8,154.8 L 146.5,156.5 L 148.9,156.8 L 149.5,154.8 L 148.0,153.8 L 150.8,152.7 L 151.5,151.0 L 154.3,151.7 L 151.5,143.6 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 152.2,105.4 L 154.1,108.7 L 157.6,109.6 L 160.8,112.2 L 167.0,109.7 L 171.4,116.0 L 177.8,113.1 L 178.0,115.4 L 176.2,117.3 L 178.8,117.3 L 180.2,118.7 L 178.9,121.5 L 181.4,122.0 L 181.4,123.5 L 184.3,125.5 L 183.0,128.9 L 185.2,131.8 L 183.2,133.4 L 187.9,139.9 L 185.9,140.1 L 184.7,138.5 L 179.4,138.5 L 177.5,137.1 L 169.9,139.3 L 166.6,145.6 L 168.6,149.4 L 164.6,151.8 L 157.4,149.2 L 157.9,146.9 L 153.8,143.5 L 149.1,141.8 L 149.5,138.3 L 146.1,137.2 L 145.0,134.6 L 143.9,136.6 L 141.9,136.8 L 137.4,126.3 L 132.3,124.2 L 133.6,122.8 L 133.0,121.7 L 138.1,118.6 L 136.7,117.3 L 137.7,113.2 L 135.7,111.0 L 138.9,110.9 L 145.5,106.2 L 149.3,106.6 L 152.2,105.4 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 170.1,69.7 L 173.5,68.9 L 171.6,71.0 L 175.7,81.6 L 181.0,83.0 L 187.7,87.5 L 187.3,89.4 L 183.2,91.8 L 184.5,96.7 L 183.3,98.6 L 189.2,105.5 L 194.7,106.3 L 193.7,109.6 L 196.8,113.3 L 196.9,115.6 L 193.1,117.6 L 191.3,117.2 L 189.7,119.5 L 187.6,119.9 L 184.4,117.8 L 183.9,114.2 L 176.8,117.8 L 177.8,113.1 L 171.4,116.0 L 167.0,109.7 L 160.8,112.2 L 157.6,109.6 L 154.1,108.7 L 151.8,105.1 L 151.0,106.3 L 145.5,106.2 L 138.2,111.1 L 136.0,110.4 L 137.9,115.0 L 131.0,121.0 L 124.0,117.7 L 117.9,117.6 L 117.0,115.6 L 117.9,111.8 L 115.2,113.5 L 111.7,110.5 L 112.2,109.0 L 106.8,106.0 L 109.6,101.8 L 105.8,97.5 L 110.1,95.1 L 110.8,93.4 L 110.0,92.3 L 104.6,92.1 L 106.1,88.6 L 104.9,87.1 L 102.7,86.9 L 105.7,83.6 L 105.9,81.6 L 108.8,81.7 L 112.7,79.9 L 135.0,84.5 L 146.8,80.0 L 150.2,80.6 L 151.3,77.9 L 155.4,77.6 L 155.7,76.0 L 158.0,75.8 L 168.8,68.5 L 170.1,69.7 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 326.3,234.6 L 331.1,235.6 L 331.0,238.1 L 334.2,241.3 L 331.7,243.4 L 333.0,244.1 L 333.1,246.2 L 330.9,246.4 L 331.5,249.2 L 328.7,251.9 L 329.6,253.4 L 326.4,254.0 L 325.8,256.2 L 322.2,255.2 L 323.1,257.5 L 322.3,258.7 L 314.9,258.6 L 314.9,261.0 L 309.2,261.9 L 306.9,265.3 L 302.8,262.6 L 302.8,264.1 L 299.7,264.8 L 299.3,269.0 L 300.6,270.0 L 302.6,269.8 L 305.5,272.3 L 310.8,272.4 L 309.1,273.4 L 308.8,275.8 L 312.1,277.5 L 312.6,279.1 L 314.4,279.1 L 314.3,281.1 L 316.5,284.3 L 314.2,285.1 L 310.2,282.9 L 309.1,283.5 L 302.7,279.3 L 301.3,281.0 L 302.5,285.4 L 300.5,289.0 L 298.1,288.6 L 298.8,286.6 L 296.8,287.6 L 292.2,285.9 L 289.5,288.4 L 287.3,286.8 L 285.4,287.1 L 287.6,283.7 L 286.8,280.6 L 274.2,282.9 L 269.5,280.0 L 270.8,278.1 L 273.0,277.5 L 275.8,273.1 L 272.5,271.8 L 271.9,272.7 L 270.0,269.9 L 270.6,266.8 L 268.9,265.9 L 269.6,261.8 L 268.4,263.0 L 265.8,262.4 L 264.5,258.8 L 262.3,258.1 L 261.4,255.4 L 258.4,254.2 L 260.5,249.9 L 259.6,247.7 L 267.3,247.2 L 269.3,245.5 L 271.2,248.0 L 274.3,246.7 L 274.2,248.5 L 277.5,251.2 L 277.9,249.7 L 280.2,249.4 L 282.4,247.2 L 284.1,249.8 L 287.0,248.7 L 287.2,249.7 L 290.3,247.3 L 296.6,246.4 L 297.7,242.5 L 301.2,243.9 L 302.9,243.2 L 304.2,246.0 L 307.3,246.3 L 306.6,248.3 L 309.4,249.9 L 311.9,246.0 L 314.7,245.8 L 316.9,247.1 L 317.2,245.4 L 319.1,246.0 L 321.2,238.5 L 323.1,238.1 L 323.6,235.9 L 325.9,236.4 L 326.3,234.6 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 159.3,346.9 L 162.1,347.3 L 161.3,348.6 L 165.2,349.1 L 164.3,352.7 L 166.1,354.1 L 162.6,360.4 L 166.6,361.8 L 163.7,362.9 L 161.6,366.3 L 163.5,369.8 L 162.2,375.4 L 163.0,376.7 L 159.2,378.6 L 165.1,381.5 L 163.4,382.1 L 163.7,387.5 L 158.4,387.0 L 155.8,388.9 L 157.4,391.7 L 155.9,392.2 L 154.9,394.5 L 158.1,398.3 L 158.1,399.9 L 156.7,402.5 L 151.7,401.3 L 151.6,403.0 L 153.2,403.5 L 151.5,409.1 L 153.3,411.1 L 155.0,411.0 L 153.5,412.4 L 154.5,414.9 L 157.1,415.3 L 157.9,413.3 L 160.0,413.4 L 161.7,415.6 L 161.7,413.5 L 163.5,414.5 L 163.6,416.3 L 161.1,416.7 L 161.9,417.1 L 160.7,418.4 L 162.4,419.3 L 161.9,420.7 L 160.5,418.4 L 157.8,418.9 L 155.8,417.9 L 155.7,416.0 L 153.6,416.2 L 156.0,420.0 L 155.3,423.0 L 158.1,422.8 L 158.3,420.1 L 158.3,421.1 L 162.3,421.5 L 163.2,424.0 L 166.0,422.4 L 167.0,423.1 L 168.7,419.8 L 171.4,419.6 L 170.8,421.7 L 172.4,420.6 L 173.6,421.4 L 173.0,424.7 L 174.2,424.5 L 174.7,426.0 L 178.1,425.6 L 177.7,429.8 L 181.1,430.8 L 178.6,435.6 L 178.6,436.3 L 179.1,436.8 L 179.1,437.5 L 177.3,436.2 L 175.3,439.1 L 168.9,437.4 L 167.3,440.5 L 165.0,440.6 L 165.5,444.7 L 163.0,448.1 L 167.2,448.6 L 167.9,449.6 L 166.2,452.3 L 163.3,452.5 L 162.2,455.4 L 159.3,454.6 L 157.2,456.0 L 155.5,454.6 L 153.8,454.9 L 152.8,458.3 L 148.2,457.7 L 147.3,456.3 L 145.8,456.8 L 145.8,455.4 L 140.9,453.8 L 140.9,451.8 L 136.9,452.2 L 135.9,450.2 L 133.6,449.9 L 129.7,446.7 L 128.8,444.7 L 129.6,443.3 L 128.4,443.9 L 127.3,442.6 L 128.2,441.8 L 123.6,440.6 L 122.7,438.5 L 120.7,439.1 L 116.9,421.2 L 114.7,418.4 L 112.8,409.9 L 112.0,409.5 L 112.3,410.3 L 111.6,410.3 L 110.6,406.7 L 108.0,405.7 L 108.7,405.1 L 108.2,404.0 L 110.9,403.0 L 111.8,399.5 L 110.7,398.3 L 112.1,397.7 L 110.7,391.8 L 108.1,391.6 L 110.2,389.7 L 112.5,389.9 L 114.2,385.5 L 112.5,385.3 L 114.6,384.5 L 114.7,382.4 L 111.9,381.7 L 112.6,379.8 L 110.7,378.1 L 111.0,377.3 L 112.9,377.6 L 114.3,375.4 L 115.9,377.2 L 117.8,376.3 L 117.9,374.5 L 121.6,373.6 L 121.8,370.9 L 124.3,370.7 L 126.3,372.5 L 127.5,370.6 L 133.8,370.5 L 133.6,365.6 L 132.3,363.7 L 133.2,362.1 L 135.9,363.9 L 137.3,363.1 L 138.0,364.6 L 141.1,363.9 L 142.0,365.1 L 143.1,363.8 L 145.3,364.8 L 144.5,360.2 L 147.1,359.1 L 147.7,357.5 L 150.4,358.8 L 152.0,356.4 L 151.2,355.3 L 154.0,355.0 L 154.7,350.6 L 157.2,351.1 L 159.3,346.9 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 122.8,438.5 L 123.6,440.6 L 128.2,441.8 L 127.2,442.3 L 128.3,443.9 L 129.6,443.3 L 128.8,444.7 L 129.7,446.7 L 132.2,448.9 L 135.8,450.1 L 137.1,452.3 L 140.9,451.8 L 141.0,453.9 L 145.8,455.4 L 146.2,457.3 L 142.8,458.5 L 143.0,460.2 L 147.9,461.9 L 146.5,464.7 L 150.9,464.2 L 150.4,465.3 L 152.0,467.0 L 149.7,468.9 L 153.7,471.4 L 153.3,473.7 L 152.2,473.7 L 152.5,479.1 L 154.9,480.5 L 159.0,478.4 L 160.0,480.6 L 158.5,482.4 L 159.7,484.5 L 157.9,490.4 L 161.0,490.5 L 161.9,492.1 L 157.6,500.0 L 159.3,502.4 L 157.9,504.5 L 159.7,507.7 L 158.4,508.5 L 158.0,511.4 L 155.0,510.3 L 148.0,501.8 L 144.6,493.5 L 143.0,484.5 L 143.8,486.7 L 144.3,486.0 L 144.3,486.5 L 144.4,487.1 L 144.8,488.6 L 144.3,486.0 L 144.8,486.7 L 145.2,486.9 L 145.0,487.2 L 145.0,488.8 L 145.6,489.2 L 145.1,490.3 L 144.9,491.7 L 146.9,491.9 L 147.3,491.6 L 145.9,491.0 L 145.3,486.1 L 144.3,485.7 L 144.4,485.7 L 144.1,485.0 L 144.2,484.8 L 144.0,485.0 L 144.1,485.1 L 144.1,485.1 L 143.5,483.4 L 143.2,483.5 L 143.4,482.6 L 142.5,481.5 L 142.5,482.5 L 142.9,483.0 L 142.7,482.8 L 143.0,483.4 L 142.9,483.7 L 143.0,483.7 L 143.0,484.0 L 143.0,484.0 L 143.1,484.3 L 143.1,484.4 L 142.8,484.3 L 140.2,475.1 L 137.7,471.0 L 136.8,465.4 L 132.9,459.9 L 131.0,454.6 L 130.2,455.1 L 127.7,452.3 L 128.6,452.5 L 128.9,452.3 L 129.1,452.7 L 129.3,452.7 L 128.9,452.1 L 127.2,451.2 L 128.3,451.2 L 127.9,449.7 L 129.4,449.1 L 126.5,449.6 L 126.6,451.0 L 126.1,451.2 L 126.4,450.2 L 120.7,439.1 L 122.8,438.5 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 91.6,511.2 L 91.0,512.2 L 90.6,512.1 L 91.2,511.9 L 91.6,511.2 Z M 76.8,470.6 L 77.1,469.8 L 77.3,469.6 L 77.3,469.8 L 76.8,470.6 Z M 86.6,463.7 L 86.6,464.1 L 86.4,464.7 L 86.6,463.7 Z M 101.0,470.8 L 101.3,470.6 L 101.7,470.7 L 101.0,470.8 Z M 85.6,465.6 L 85.9,465.6 L 85.7,465.8 L 85.6,465.6 Z M 90.2,459.6 L 90.4,459.7 L 90.4,460.0 L 90.3,459.6 L 90.2,459.6 Z M 100.7,483.0 L 100.9,482.4 L 100.8,482.6 L 100.8,482.9 L 100.7,483.0 Z M 85.4,456.6 L 85.6,456.2 L 85.6,456.4 L 85.4,456.6 Z M 101.0,481.4 L 101.1,481.6 L 101.0,481.8 L 101.0,481.4 Z M 78.6,468.5 L 78.7,468.7 L 78.6,468.7 L 78.6,468.5 Z M 84.1,475.0 L 84.5,474.8 L 84.0,475.1 L 84.1,475.0 Z M 79.3,481.9 L 79.3,481.8 L 79.4,481.9 L 79.3,481.9 Z M 78.6,483.2 L 78.6,483.3 L 78.5,483.3 L 78.6,483.2 Z M 79.1,468.5 L 79.1,468.6 L 79.1,468.6 L 79.1,468.5 Z M 77.0,457.9 L 77.0,457.9 L 77.0,457.9 L 77.0,457.9 Z M 100.5,482.7 L 100.5,482.8 L 100.4,482.7 L 100.5,482.7 Z M 79.4,468.3 L 79.4,468.4 L 79.4,468.4 L 79.4,468.3 Z M 76.7,470.7 L 76.7,470.7 L 76.6,470.7 L 76.7,470.7 Z M 75.6,464.2 L 75.7,464.2 L 75.6,464.3 L 75.6,464.2 Z M 100.5,482.8 L 100.6,482.8 L 100.5,482.8 L 100.5,482.8 Z M 90.4,512.0 L 90.5,512.0 L 90.4,512.0 L 90.4,512.0 Z M 75.6,464.1 L 75.7,464.2 L 75.6,464.2 L 75.6,464.1 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 177.6,209.1 L 180.9,210.9 L 183.4,210.2 L 187.9,212.1 L 187.7,213.9 L 190.2,217.7 L 187.1,221.0 L 188.0,221.9 L 185.7,226.5 L 183.9,227.4 L 184.8,229.4 L 178.7,230.4 L 176.5,233.5 L 178.9,237.5 L 177.0,238.1 L 177.0,239.6 L 174.4,241.9 L 176.1,245.0 L 175.3,247.3 L 177.9,251.4 L 179.9,249.4 L 184.6,252.9 L 187.5,250.1 L 186.1,245.4 L 183.9,246.0 L 184.4,242.6 L 181.8,240.1 L 181.0,235.4 L 178.7,234.9 L 182.3,232.3 L 184.2,233.7 L 184.9,232.6 L 184.0,232.5 L 183.6,231.4 L 185.3,232.5 L 186.1,230.4 L 187.6,233.4 L 186.0,233.3 L 184.5,234.6 L 185.4,235.8 L 186.0,234.0 L 187.3,233.9 L 186.0,236.9 L 187.9,236.4 L 188.1,235.1 L 188.3,237.2 L 189.4,236.4 L 190.0,237.7 L 192.5,237.6 L 192.5,235.5 L 193.6,236.1 L 192.2,235.0 L 192.9,234.0 L 193.7,235.2 L 194.0,234.8 L 196.0,235.2 L 194.5,237.7 L 196.0,238.2 L 197.2,236.7 L 201.8,238.0 L 201.8,235.7 L 208.5,232.6 L 211.2,236.7 L 208.9,238.5 L 209.4,239.5 L 212.3,238.8 L 212.0,237.9 L 214.2,238.4 L 213.9,237.8 L 214.0,237.0 L 215.3,238.7 L 216.9,238.6 L 215.7,237.3 L 217.8,237.8 L 218.6,236.4 L 217.4,240.5 L 221.8,240.3 L 222.7,241.3 L 224.0,240.6 L 225.0,236.8 L 228.5,238.3 L 229.8,236.4 L 230.4,238.6 L 235.2,239.4 L 236.2,242.3 L 240.1,242.4 L 239.7,243.8 L 240.8,243.2 L 241.7,245.9 L 243.5,246.1 L 243.7,244.4 L 245.5,245.2 L 247.6,244.4 L 249.8,246.1 L 248.5,246.8 L 249.3,251.1 L 247.6,253.7 L 250.0,256.5 L 247.1,258.5 L 245.0,259.4 L 235.5,257.9 L 233.8,259.0 L 231.4,257.1 L 230.3,257.7 L 231.8,260.4 L 229.9,262.6 L 230.5,263.9 L 235.5,263.5 L 236.5,265.4 L 239.9,266.8 L 239.3,269.8 L 235.9,270.9 L 235.9,272.8 L 233.1,274.2 L 233.0,277.6 L 230.6,279.7 L 227.0,281.3 L 225.8,279.9 L 222.4,281.3 L 220.6,287.3 L 219.0,286.6 L 217.5,292.6 L 216.0,293.1 L 215.1,299.2 L 210.9,298.6 L 208.5,294.6 L 202.9,296.2 L 199.9,294.9 L 196.7,295.9 L 196.0,293.8 L 191.7,292.9 L 191.6,294.1 L 186.6,295.1 L 186.9,296.8 L 178.7,296.6 L 177.9,294.7 L 170.7,298.4 L 164.9,298.8 L 163.3,298.6 L 162.2,296.0 L 165.3,295.9 L 164.2,293.3 L 163.2,292.2 L 160.1,292.3 L 152.1,295.0 L 151.9,297.1 L 149.3,299.3 L 149.3,301.6 L 147.1,301.5 L 145.3,303.5 L 141.9,303.4 L 140.7,298.6 L 126.4,298.0 L 121.2,294.5 L 115.6,293.6 L 113.8,288.0 L 111.3,289.5 L 108.9,289.2 L 108.1,288.2 L 109.5,287.0 L 107.7,282.6 L 109.6,283.2 L 111.3,282.0 L 109.6,280.7 L 108.5,281.6 L 107.3,279.6 L 109.0,280.0 L 110.9,277.9 L 112.7,278.0 L 114.3,274.5 L 111.8,271.1 L 118.7,268.7 L 115.0,266.8 L 116.5,264.6 L 121.8,261.9 L 121.3,257.9 L 122.7,255.4 L 121.1,251.6 L 118.8,251.3 L 120.5,248.2 L 118.1,247.5 L 119.8,244.9 L 119.6,242.9 L 121.1,245.2 L 123.2,243.3 L 120.4,242.9 L 120.1,240.1 L 123.5,241.9 L 125.4,238.8 L 128.5,238.9 L 127.1,241.4 L 129.6,241.8 L 127.8,242.6 L 126.2,241.0 L 126.4,244.1 L 136.5,244.0 L 137.6,248.4 L 135.7,248.1 L 134.7,249.3 L 136.3,251.8 L 134.9,253.6 L 136.4,254.6 L 134.2,256.4 L 131.2,255.1 L 130.3,257.2 L 132.3,259.1 L 134.0,259.8 L 134.3,257.4 L 135.5,258.2 L 138.7,257.0 L 138.5,255.4 L 141.3,254.3 L 142.1,250.5 L 142.6,252.3 L 146.8,252.1 L 147.8,253.2 L 150.4,251.2 L 150.5,253.1 L 153.8,253.7 L 154.5,252.5 L 152.4,247.2 L 154.0,247.0 L 154.8,248.4 L 156.5,246.6 L 155.8,244.3 L 152.2,242.5 L 154.6,241.6 L 153.0,239.4 L 161.9,237.7 L 161.3,232.8 L 160.0,232.7 L 158.8,234.5 L 151.7,234.5 L 148.3,232.4 L 147.0,227.9 L 148.8,225.3 L 151.3,224.8 L 157.4,219.4 L 168.7,214.2 L 170.0,212.5 L 173.1,212.1 L 173.4,210.2 L 177.6,209.1 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 113.6,287.9 L 116.2,293.9 L 121.2,294.5 L 127.7,298.4 L 140.7,298.6 L 141.3,302.7 L 143.7,303.5 L 149.3,301.6 L 149.3,299.3 L 151.9,297.1 L 152.1,295.0 L 160.1,292.3 L 163.2,292.2 L 164.2,293.3 L 165.3,295.9 L 162.2,296.0 L 163.3,298.6 L 164.9,298.8 L 170.7,298.4 L 177.9,294.7 L 178.7,296.6 L 186.9,296.8 L 186.6,295.1 L 191.6,294.1 L 191.7,292.9 L 196.0,293.8 L 196.7,295.9 L 199.9,294.9 L 202.9,296.2 L 208.5,294.6 L 210.9,298.6 L 215.3,299.7 L 211.3,303.2 L 213.7,309.9 L 212.1,311.0 L 214.4,311.2 L 214.3,315.6 L 210.5,317.1 L 210.7,318.7 L 213.2,320.0 L 212.8,322.2 L 210.9,322.1 L 212.4,323.2 L 210.7,324.4 L 213.1,324.0 L 215.0,327.3 L 218.8,329.7 L 217.1,330.4 L 218.1,331.4 L 216.5,332.6 L 214.2,332.3 L 213.5,330.8 L 212.0,331.9 L 208.6,337.5 L 209.9,340.4 L 206.1,342.6 L 202.6,340.1 L 203.2,337.0 L 202.0,335.6 L 203.4,334.5 L 203.8,330.8 L 200.8,327.6 L 195.7,329.2 L 192.0,327.3 L 190.9,329.8 L 187.3,328.3 L 187.5,326.7 L 185.7,326.6 L 185.5,325.0 L 179.7,324.4 L 176.8,322.4 L 177.7,324.6 L 176.1,326.5 L 176.7,329.9 L 174.7,330.6 L 174.5,333.5 L 170.9,331.8 L 169.4,332.4 L 169.2,335.8 L 167.7,336.9 L 170.8,340.2 L 167.4,342.6 L 167.4,344.6 L 165.1,344.7 L 164.0,346.6 L 164.7,348.6 L 161.3,348.6 L 162.1,347.3 L 160.6,346.2 L 157.2,351.1 L 154.7,350.6 L 154.0,355.0 L 151.2,355.3 L 152.0,356.4 L 150.4,358.8 L 147.7,357.5 L 147.1,359.1 L 144.5,360.2 L 145.3,364.8 L 143.1,363.8 L 142.0,365.1 L 141.1,363.9 L 138.0,364.6 L 137.3,363.1 L 135.9,363.9 L 133.2,362.1 L 132.3,363.7 L 133.6,365.6 L 133.8,370.5 L 127.5,370.6 L 126.3,372.5 L 124.3,370.7 L 121.8,370.9 L 121.6,373.6 L 117.9,374.5 L 117.8,376.3 L 115.9,377.2 L 114.3,375.4 L 112.9,377.6 L 111.0,377.4 L 112.6,379.8 L 112.0,381.8 L 114.9,382.9 L 114.5,384.8 L 112.5,385.3 L 114.2,385.5 L 112.5,389.9 L 110.2,389.7 L 107.0,392.6 L 104.5,389.5 L 101.3,390.7 L 99.9,387.6 L 97.7,385.3 L 96.9,379.6 L 95.4,377.8 L 96.7,377.2 L 95.4,376.4 L 94.4,369.5 L 95.0,369.8 L 95.5,369.3 L 93.3,365.0 L 94.2,364.9 L 93.0,363.3 L 92.4,356.4 L 90.7,354.5 L 91.0,352.9 L 89.1,350.0 L 89.7,349.0 L 91.7,351.1 L 91.7,348.3 L 90.9,348.7 L 90.7,349.3 L 88.8,347.8 L 87.9,342.3 L 88.1,340.5 L 90.0,340.4 L 88.7,338.9 L 89.5,337.7 L 89.9,337.9 L 90.5,337.7 L 90.8,337.4 L 90.8,337.3 L 89.6,336.4 L 87.1,339.1 L 87.5,334.3 L 86.9,335.2 L 86.7,334.6 L 86.9,334.5 L 86.9,334.1 L 87.6,333.2 L 87.6,333.0 L 86.7,334.2 L 86.8,328.7 L 85.7,328.5 L 84.6,323.4 L 85.2,321.7 L 86.3,322.2 L 86.0,318.8 L 88.2,317.3 L 93.2,320.2 L 95.3,317.6 L 97.2,317.7 L 96.6,314.7 L 98.4,312.2 L 96.8,310.4 L 97.7,309.4 L 101.2,311.9 L 105.7,308.9 L 105.0,305.0 L 102.9,304.6 L 102.5,302.9 L 101.0,303.0 L 99.8,302.0 L 103.6,301.9 L 105.8,298.2 L 112.0,295.9 L 104.3,296.7 L 103.1,294.6 L 104.8,293.3 L 103.5,291.3 L 113.6,287.9 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 441.8,229.0 L 441.4,231.2 L 443.5,232.1 L 441.9,236.1 L 444.5,237.3 L 444.5,239.2 L 437.7,250.3 L 435.0,258.3 L 429.4,257.0 L 428.4,255.7 L 424.4,256.7 L 421.8,254.0 L 420.2,255.5 L 420.1,254.5 L 417.7,255.1 L 415.7,254.0 L 417.9,242.7 L 419.3,242.6 L 422.6,235.3 L 423.8,234.5 L 426.0,236.3 L 429.7,230.4 L 432.6,229.9 L 437.4,231.5 L 441.8,229.0 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 397.4,221.6 L 398.5,223.3 L 404.7,222.0 L 402.3,224.2 L 403.5,224.8 L 402.4,228.6 L 406.1,227.3 L 409.1,230.4 L 410.4,229.9 L 409.0,232.0 L 412.6,234.2 L 412.9,236.0 L 408.3,237.3 L 406.7,239.0 L 400.9,236.5 L 394.0,237.6 L 387.9,236.2 L 374.6,237.2 L 364.5,234.8 L 365.1,230.7 L 367.5,229.7 L 365.5,227.4 L 369.1,223.9 L 375.0,223.0 L 375.5,225.0 L 376.7,223.9 L 377.4,224.9 L 382.6,224.1 L 384.0,225.1 L 383.5,226.2 L 386.7,225.6 L 387.1,227.8 L 388.9,225.9 L 390.7,225.9 L 392.0,225.3 L 391.2,225.4 L 392.9,222.7 L 394.4,224.8 L 395.4,222.3 L 397.4,221.6 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 412.8,249.0 L 416.5,249.5 L 415.7,254.0 L 421.6,255.0 L 423.3,261.0 L 422.5,269.9 L 420.9,272.1 L 418.2,271.4 L 418.8,273.5 L 417.6,276.9 L 419.5,284.2 L 418.6,285.5 L 416.8,285.2 L 416.2,288.7 L 415.4,288.0 L 414.6,289.3 L 411.5,286.0 L 409.7,288.8 L 408.4,277.4 L 405.9,273.2 L 406.4,268.1 L 404.0,258.9 L 405.2,257.3 L 404.6,251.8 L 406.7,251.7 L 407.4,253.7 L 412.2,247.4 L 412.8,249.0 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 451.8,206.3 L 452.5,212.1 L 449.7,215.8 L 450.9,217.0 L 450.6,221.5 L 451.7,222.0 L 449.0,224.7 L 449.5,227.1 L 447.1,230.3 L 442.7,232.0 L 441.4,231.2 L 441.7,228.2 L 437.5,231.5 L 432.6,229.9 L 429.7,230.4 L 426.1,236.2 L 424.3,235.6 L 423.6,232.5 L 421.5,230.7 L 428.7,223.8 L 429.0,226.3 L 432.0,224.6 L 432.4,220.5 L 436.9,214.2 L 437.5,215.7 L 439.9,212.4 L 444.7,210.7 L 447.4,207.8 L 449.0,208.2 L 451.8,206.3 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 303.3,279.8 L 309.1,283.5 L 310.2,282.9 L 313.8,284.9 L 313.7,286.1 L 317.8,287.2 L 318.8,290.6 L 322.1,289.2 L 322.7,291.6 L 325.9,292.9 L 326.2,294.8 L 320.1,296.3 L 315.4,301.6 L 317.8,307.6 L 315.5,308.5 L 314.3,311.0 L 319.1,309.5 L 314.0,313.2 L 314.6,315.6 L 309.5,318.4 L 310.0,318.5 L 309.6,319.2 L 309.6,319.3 L 309.7,319.4 L 309.6,319.2 L 310.0,319.0 L 310.2,318.3 L 311.1,317.8 L 310.5,318.3 L 309.9,319.2 L 309.1,320.0 L 308.7,320.1 L 308.3,321.4 L 306.8,320.0 L 306.7,320.2 L 306.4,320.0 L 306.3,320.0 L 306.1,320.2 L 305.9,320.6 L 307.6,321.5 L 307.2,321.9 L 307.9,321.8 L 300.5,323.8 L 292.6,327.2 L 282.1,335.5 L 280.3,334.8 L 279.1,337.1 L 278.7,336.3 L 276.2,337.1 L 276.4,338.7 L 274.5,340.9 L 267.6,340.5 L 263.3,334.8 L 261.8,337.2 L 260.6,336.2 L 260.6,338.2 L 258.1,337.5 L 259.6,340.1 L 256.5,341.9 L 255.3,341.0 L 253.3,343.2 L 254.6,344.8 L 253.4,346.4 L 254.0,347.5 L 251.6,347.8 L 249.9,346.4 L 247.1,349.9 L 244.6,344.9 L 242.8,346.9 L 242.3,348.4 L 243.3,348.6 L 241.9,350.4 L 242.8,351.4 L 241.2,353.8 L 237.3,352.7 L 230.5,356.6 L 226.8,356.8 L 229.2,349.4 L 232.7,348.0 L 236.0,344.5 L 235.0,343.0 L 238.1,342.0 L 240.8,338.8 L 239.5,335.3 L 239.8,330.5 L 237.2,329.1 L 237.8,324.6 L 234.4,322.5 L 234.7,320.4 L 235.9,319.4 L 237.3,320.9 L 240.6,321.1 L 242.4,323.8 L 244.1,322.6 L 246.5,323.2 L 246.4,324.8 L 248.3,323.8 L 248.4,321.2 L 243.2,320.1 L 243.9,314.1 L 242.1,312.0 L 242.5,306.6 L 244.3,307.6 L 247.2,302.3 L 252.4,301.9 L 255.1,303.1 L 257.6,298.6 L 259.7,299.1 L 258.6,296.7 L 259.4,294.8 L 261.1,294.5 L 260.0,293.7 L 260.8,292.0 L 262.7,291.0 L 261.8,287.9 L 263.4,285.1 L 269.5,282.5 L 269.4,279.8 L 274.2,282.9 L 286.8,280.6 L 287.6,283.7 L 285.5,287.2 L 287.3,286.8 L 289.5,288.4 L 291.7,285.9 L 296.8,287.6 L 298.8,286.6 L 298.1,288.6 L 300.5,289.0 L 302.7,283.5 L 301.4,280.7 L 303.3,279.8 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 198.5,451.7 L 200.0,452.9 L 201.6,452.3 L 201.0,454.5 L 198.7,453.5 L 199.8,453.1 L 198.5,451.7 Z M 199.5,469.0 L 201.9,468.0 L 201.4,470.6 L 201.9,470.7 L 201.2,470.7 L 199.5,469.0 Z M 126.4,449.7 L 129.4,449.2 L 127.1,451.0 L 127.8,452.1 L 127.7,452.2 L 126.4,449.7 Z M 239.7,374.4 L 241.7,374.1 L 241.8,374.4 L 239.7,374.4 Z M 241.1,374.9 L 241.3,374.7 L 241.5,374.8 L 241.1,374.9 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 137.0,116.1 L 138.0,118.7 L 133.0,121.7 L 133.6,122.8 L 132.3,124.2 L 137.4,126.3 L 141.9,136.8 L 143.9,136.6 L 145.0,134.6 L 146.1,137.2 L 149.3,138.1 L 149.1,141.8 L 152.9,145.2 L 150.4,145.9 L 153.2,147.0 L 154.2,151.8 L 151.5,151.0 L 150.8,152.7 L 148.0,153.8 L 149.5,154.8 L 148.9,156.8 L 146.5,156.5 L 145.8,154.8 L 144.4,156.3 L 142.4,155.5 L 143.3,156.4 L 141.8,159.3 L 143.1,160.2 L 139.8,162.2 L 135.4,161.0 L 132.1,162.3 L 130.1,161.2 L 126.5,165.5 L 125.4,163.6 L 126.6,162.2 L 125.8,160.7 L 124.3,161.3 L 124.2,159.5 L 122.7,160.5 L 119.6,158.2 L 117.0,159.7 L 104.8,158.6 L 106.0,155.1 L 104.5,151.9 L 115.6,140.7 L 117.9,140.3 L 114.8,139.6 L 117.0,134.3 L 115.8,133.7 L 115.0,130.0 L 116.3,127.4 L 121.4,124.5 L 126.7,124.1 L 128.7,121.7 L 128.1,119.9 L 130.5,120.0 L 131.0,121.0 L 137.0,116.1 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 104.7,158.5 L 115.0,159.0 L 115.6,160.3 L 114.1,161.6 L 116.4,162.1 L 116.5,165.8 L 115.2,167.1 L 116.2,169.1 L 120.2,167.8 L 124.1,170.6 L 129.3,170.1 L 128.7,172.1 L 131.2,174.2 L 130.4,175.6 L 131.9,180.7 L 135.4,184.1 L 137.9,184.7 L 140.6,188.2 L 138.1,189.2 L 139.7,189.5 L 137.9,191.8 L 138.5,192.9 L 142.8,193.3 L 141.6,190.7 L 142.0,189.7 L 144.6,190.2 L 143.8,187.7 L 146.8,188.2 L 146.5,189.9 L 147.9,190.1 L 147.9,191.2 L 152.2,187.2 L 153.8,187.4 L 154.8,188.3 L 153.8,196.3 L 156.7,195.0 L 156.0,193.6 L 160.2,194.0 L 160.9,198.4 L 162.4,200.5 L 165.4,201.4 L 166.4,203.7 L 163.5,205.4 L 167.7,206.6 L 162.3,209.2 L 162.7,211.1 L 163.5,209.5 L 167.7,208.0 L 172.1,209.3 L 173.6,207.7 L 176.0,208.2 L 174.6,210.3 L 173.3,210.3 L 173.1,212.1 L 170.0,212.5 L 168.7,214.2 L 157.4,219.4 L 151.3,224.8 L 148.8,225.3 L 147.0,227.9 L 148.3,232.4 L 151.7,234.5 L 158.8,234.5 L 160.0,232.7 L 161.3,232.8 L 161.9,237.7 L 153.0,239.4 L 154.6,241.6 L 152.2,242.5 L 155.8,244.3 L 156.5,246.6 L 154.8,248.4 L 154.0,247.0 L 152.4,247.2 L 154.5,252.5 L 153.8,253.7 L 150.5,253.1 L 150.4,251.2 L 147.8,253.2 L 146.8,252.1 L 142.6,252.3 L 142.1,250.5 L 141.3,254.3 L 138.5,255.4 L 138.7,257.0 L 135.5,258.2 L 134.3,257.4 L 134.0,259.8 L 132.3,259.1 L 130.3,257.2 L 131.2,255.1 L 134.2,256.4 L 136.4,254.6 L 134.9,253.6 L 136.3,251.8 L 134.7,249.3 L 135.7,248.1 L 137.6,248.4 L 136.5,244.0 L 126.4,244.1 L 126.2,241.0 L 127.8,242.6 L 129.6,241.8 L 127.1,241.4 L 128.5,238.9 L 125.4,238.8 L 123.5,241.9 L 120.3,240.0 L 120.4,242.9 L 123.2,243.6 L 121.1,245.2 L 119.6,242.9 L 119.8,244.9 L 118.1,247.5 L 120.5,248.2 L 118.8,251.3 L 121.1,251.6 L 122.7,255.4 L 121.3,257.9 L 121.8,261.9 L 116.5,264.6 L 115.0,266.8 L 118.7,268.7 L 111.8,271.1 L 106.1,266.0 L 104.8,266.7 L 103.8,264.9 L 100.6,264.8 L 101.0,262.0 L 98.6,262.1 L 98.5,260.7 L 96.2,259.3 L 97.2,257.0 L 96.3,253.8 L 94.3,255.7 L 91.6,252.8 L 94.0,249.9 L 91.6,249.4 L 91.8,247.8 L 89.0,250.5 L 85.9,250.0 L 85.3,248.4 L 82.8,247.6 L 81.5,249.2 L 81.2,247.6 L 78.0,246.4 L 79.7,245.8 L 76.6,245.8 L 74.8,244.4 L 73.0,245.6 L 71.9,244.9 L 71.6,246.0 L 70.7,244.9 L 62.5,246.0 L 59.6,245.0 L 55.9,237.2 L 52.4,233.2 L 52.2,228.2 L 45.9,228.1 L 42.9,224.2 L 44.1,214.3 L 38.4,213.6 L 33.0,210.1 L 34.6,204.1 L 41.6,197.9 L 43.9,193.4 L 47.3,190.6 L 50.5,190.4 L 53.7,195.3 L 55.8,195.6 L 72.3,191.4 L 72.9,188.6 L 77.0,184.9 L 80.2,178.2 L 89.3,174.0 L 94.7,165.3 L 96.6,159.1 L 106.0,154.9 L 104.7,158.5 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 345.1,189.1 L 348.1,190.4 L 349.0,192.4 L 347.1,197.8 L 349.4,202.4 L 346.5,204.7 L 343.7,203.9 L 341.7,205.7 L 336.1,204.8 L 334.9,203.4 L 335.4,198.9 L 337.9,193.3 L 336.6,191.5 L 345.1,189.1 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 204.1,426.5 L 209.6,429.1 L 209.5,428.2 L 209.6,428.1 L 209.6,427.9 L 209.6,427.9 L 209.6,427.9 L 209.9,430.6 L 208.4,438.7 L 206.8,443.7 L 204.6,445.8 L 201.6,452.3 L 200.0,452.9 L 200.2,451.6 L 198.5,451.7 L 199.8,453.1 L 198.7,453.5 L 201.0,454.5 L 200.3,458.5 L 201.9,468.0 L 199.9,467.9 L 199.5,469.0 L 201.9,470.7 L 202.4,479.0 L 201.6,479.5 L 200.1,479.5 L 200.7,479.0 L 198.3,478.0 L 198.0,478.8 L 197.0,478.8 L 198.8,479.2 L 199.0,479.0 L 199.1,479.2 L 200.0,479.4 L 196.6,479.0 L 197.6,478.5 L 196.9,478.3 L 192.8,479.7 L 191.7,481.6 L 192.3,483.3 L 186.3,492.3 L 188.6,495.0 L 191.1,495.6 L 185.3,495.9 L 177.7,498.7 L 174.5,502.1 L 174.3,504.0 L 174.9,503.7 L 175.5,504.3 L 173.4,505.9 L 172.8,510.5 L 164.8,514.3 L 164.4,515.3 L 160.6,514.5 L 156.9,511.7 L 159.7,507.8 L 157.9,504.5 L 159.3,502.4 L 157.6,500.0 L 161.9,492.1 L 161.0,490.5 L 157.9,490.4 L 159.7,484.5 L 158.5,482.4 L 160.0,480.6 L 159.0,478.4 L 154.9,480.5 L 152.5,479.1 L 152.2,473.7 L 153.3,473.7 L 153.7,471.4 L 149.7,468.9 L 152.0,467.0 L 150.4,465.3 L 150.9,464.2 L 146.5,464.7 L 147.9,461.9 L 143.0,460.2 L 142.8,458.5 L 147.3,456.3 L 148.2,457.7 L 152.8,458.3 L 153.8,454.9 L 155.5,454.6 L 157.2,456.0 L 159.3,454.6 L 162.2,455.4 L 163.3,452.5 L 166.2,452.3 L 167.9,449.6 L 163.0,447.4 L 165.3,445.5 L 165.0,440.6 L 167.3,440.5 L 168.9,437.4 L 170.5,437.1 L 171.4,438.4 L 172.5,437.6 L 175.3,439.1 L 174.8,440.3 L 179.1,441.4 L 183.1,434.1 L 186.0,433.7 L 186.1,434.7 L 186.8,434.8 L 187.7,433.8 L 190.5,434.9 L 191.6,432.9 L 193.0,433.5 L 194.9,432.0 L 194.1,430.1 L 195.0,429.8 L 197.4,431.1 L 198.9,430.5 L 200.1,431.9 L 199.7,430.6 L 203.1,429.6 L 204.9,427.2 L 204.1,426.5 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 402.8,247.3 L 404.2,249.5 L 403.2,251.8 L 405.1,252.7 L 405.0,258.0 L 403.4,261.4 L 402.7,260.0 L 401.0,261.6 L 399.2,260.3 L 399.4,264.3 L 396.0,267.9 L 397.1,270.6 L 393.6,273.1 L 390.3,267.6 L 390.4,271.2 L 389.3,270.6 L 386.1,260.1 L 387.1,260.1 L 388.1,256.1 L 389.7,256.2 L 389.6,254.1 L 393.2,254.6 L 394.4,252.1 L 395.9,253.6 L 395.6,251.8 L 398.2,253.6 L 398.5,250.4 L 401.7,249.6 L 402.8,247.3 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 164.9,151.5 L 170.6,154.1 L 166.8,160.2 L 168.3,163.3 L 170.9,162.9 L 171.5,165.5 L 177.1,161.4 L 178.4,161.8 L 181.6,165.3 L 186.7,167.0 L 183.3,169.2 L 185.6,170.1 L 186.4,171.9 L 190.1,172.3 L 190.6,174.0 L 193.9,174.9 L 194.7,176.8 L 200.6,176.2 L 200.8,177.6 L 201.9,176.9 L 203.8,179.0 L 206.2,177.2 L 212.7,181.7 L 212.5,179.9 L 213.6,179.5 L 224.0,184.8 L 225.8,188.5 L 227.8,188.1 L 235.0,193.0 L 238.0,191.9 L 244.2,195.9 L 248.4,195.2 L 248.9,198.8 L 256.3,199.6 L 258.4,201.6 L 259.5,199.2 L 263.2,199.3 L 268.1,201.7 L 270.3,208.7 L 273.4,209.2 L 273.3,211.2 L 276.2,213.1 L 270.8,212.8 L 270.2,214.4 L 267.9,214.8 L 267.9,215.9 L 272.2,217.2 L 272.0,219.3 L 269.6,219.4 L 269.5,220.4 L 272.2,223.4 L 278.1,225.3 L 279.7,227.7 L 277.4,228.5 L 274.8,227.4 L 274.1,228.8 L 271.0,227.8 L 266.8,232.5 L 258.6,236.6 L 258.9,241.7 L 262.0,245.7 L 259.6,247.7 L 260.5,249.9 L 256.2,257.1 L 252.2,257.9 L 247.7,253.8 L 249.3,251.1 L 248.4,249.6 L 248.5,246.8 L 249.9,246.9 L 249.3,245.3 L 243.9,244.4 L 243.5,246.1 L 241.7,245.9 L 240.8,243.2 L 239.7,243.8 L 240.1,242.4 L 236.2,242.3 L 235.2,239.4 L 230.4,238.6 L 229.8,236.4 L 228.5,238.3 L 225.0,236.8 L 224.0,240.6 L 222.7,241.3 L 221.8,240.3 L 217.4,240.5 L 218.6,236.4 L 217.8,237.8 L 215.7,237.3 L 216.9,238.6 L 215.3,238.7 L 214.0,237.0 L 214.2,238.4 L 208.8,239.2 L 211.2,236.7 L 208.5,232.6 L 201.8,235.7 L 201.9,238.0 L 197.2,236.7 L 196.0,238.2 L 194.5,237.7 L 196.0,235.2 L 193.7,235.2 L 192.8,234.0 L 192.9,237.4 L 190.1,237.8 L 189.4,236.4 L 188.3,237.2 L 188.1,235.1 L 187.9,236.4 L 185.9,236.9 L 187.2,233.9 L 186.0,234.0 L 185.4,235.8 L 184.5,234.7 L 186.0,233.3 L 187.6,233.4 L 186.4,232.3 L 186.9,230.4 L 185.2,231.3 L 185.7,232.0 L 185.3,232.5 L 183.6,231.4 L 184.9,232.6 L 184.2,233.7 L 182.3,232.3 L 178.7,234.9 L 181.0,235.4 L 181.8,240.1 L 184.4,242.6 L 183.9,246.0 L 186.1,245.4 L 187.5,250.1 L 184.6,252.9 L 179.9,249.4 L 178.3,251.3 L 177.3,250.9 L 177.6,249.6 L 175.2,247.2 L 176.1,245.0 L 174.4,241.9 L 177.0,239.6 L 177.0,238.1 L 178.9,237.5 L 176.5,233.5 L 178.7,230.4 L 184.8,229.4 L 183.9,227.4 L 185.7,226.5 L 188.0,221.9 L 187.1,221.0 L 190.1,218.1 L 190.1,216.0 L 187.7,213.9 L 187.9,212.1 L 183.4,210.2 L 180.9,210.9 L 177.4,209.0 L 175.1,209.7 L 175.2,207.7 L 172.1,209.3 L 167.7,208.0 L 162.4,210.7 L 162.3,209.2 L 167.4,207.2 L 167.7,206.6 L 163.8,205.8 L 166.4,203.7 L 165.4,201.4 L 162.4,200.5 L 160.5,197.0 L 159.9,193.8 L 164.1,191.5 L 163.0,189.3 L 164.2,186.7 L 160.2,181.6 L 160.7,179.0 L 158.6,177.6 L 156.8,164.6 L 158.5,159.4 L 162.2,156.4 L 164.9,151.5 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 188.7,134.2 L 194.7,141.2 L 197.6,142.7 L 201.9,142.2 L 207.9,145.7 L 207.8,148.7 L 213.8,150.2 L 220.9,154.0 L 210.3,162.2 L 211.0,164.7 L 208.3,167.2 L 209.2,171.1 L 206.7,172.7 L 204.1,179.0 L 201.9,176.9 L 200.8,177.6 L 200.6,176.2 L 194.7,176.8 L 193.9,174.9 L 190.6,174.0 L 190.1,172.3 L 186.4,171.9 L 185.6,170.1 L 183.3,169.2 L 186.7,167.0 L 181.6,165.3 L 179.4,162.2 L 177.1,161.4 L 171.5,165.5 L 170.9,162.9 L 168.3,163.3 L 166.8,160.2 L 170.6,154.1 L 164.6,151.3 L 168.6,149.4 L 166.6,145.6 L 169.9,139.3 L 177.5,137.1 L 179.4,138.5 L 184.7,138.5 L 187.1,140.1 L 187.9,139.9 L 186.7,136.5 L 188.7,134.2 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+  <path d="M 336.7,205.0 L 341.7,205.7 L 344.3,203.8 L 347.6,204.8 L 348.8,205.2 L 348.9,207.8 L 351.3,208.0 L 353.0,210.1 L 357.1,209.2 L 361.4,210.6 L 361.2,211.6 L 364.9,211.8 L 365.1,216.0 L 362.6,218.4 L 362.9,220.5 L 361.3,219.6 L 360.6,221.6 L 361.5,222.3 L 359.9,223.9 L 353.6,221.1 L 352.4,216.8 L 350.3,215.7 L 349.6,217.3 L 352.0,219.1 L 349.1,218.5 L 348.4,219.5 L 344.7,215.6 L 341.7,214.4 L 341.4,212.9 L 340.8,213.6 L 340.1,215.5 L 342.5,215.8 L 343.2,217.4 L 337.6,220.9 L 337.7,222.9 L 336.0,224.7 L 336.5,226.6 L 339.0,226.4 L 343.5,231.3 L 347.8,231.1 L 348.4,233.7 L 351.1,234.8 L 349.7,236.8 L 341.9,236.4 L 341.2,240.5 L 339.9,241.8 L 338.3,240.2 L 336.9,240.6 L 337.5,241.8 L 334.8,245.0 L 340.0,249.6 L 346.6,251.4 L 345.9,254.0 L 347.2,256.1 L 344.0,258.1 L 343.8,261.7 L 347.6,264.1 L 346.4,268.0 L 350.8,268.7 L 348.4,272.1 L 350.4,274.7 L 350.0,277.7 L 347.7,276.5 L 349.4,277.4 L 349.8,278.4 L 350.2,278.5 L 349.9,279.2 L 349.2,279.3 L 348.8,279.5 L 348.3,280.2 L 348.5,281.4 L 347.1,279.3 L 345.9,279.9 L 345.9,279.7 L 345.7,279.7 L 345.7,279.6 L 345.6,279.5 L 345.7,279.0 L 345.7,278.8 L 345.6,279.5 L 345.8,279.9 L 348.9,282.7 L 348.5,282.5 L 348.0,282.5 L 346.6,285.3 L 346.1,285.0 L 345.5,284.9 L 345.0,284.9 L 345.3,284.5 L 345.8,283.6 L 345.9,283.1 L 345.5,282.9 L 344.9,284.8 L 345.0,285.1 L 345.6,285.2 L 344.7,286.7 L 344.5,285.8 L 343.9,285.4 L 344.5,289.9 L 343.5,288.9 L 343.9,290.0 L 343.4,290.0 L 343.2,290.8 L 342.7,290.4 L 343.1,289.8 L 343.2,289.6 L 343.1,289.4 L 342.7,289.0 L 343.1,288.6 L 343.4,288.8 L 343.5,288.7 L 343.6,288.5 L 343.7,288.1 L 343.7,287.9 L 342.6,289.0 L 343.1,289.8 L 342.5,289.9 L 342.3,290.1 L 342.3,289.1 L 342.2,289.0 L 341.9,289.0 L 342.1,288.3 L 341.3,290.3 L 340.9,290.1 L 341.3,289.8 L 341.0,288.9 L 340.7,288.9 L 341.0,291.7 L 340.4,291.3 L 340.7,290.1 L 340.6,289.9 L 340.4,289.7 L 340.4,290.8 L 339.0,290.3 L 339.7,290.9 L 338.8,291.6 L 338.8,291.7 L 338.9,291.9 L 339.2,292.3 L 338.7,291.7 L 339.2,292.4 L 339.0,292.8 L 337.3,290.4 L 338.3,287.2 L 337.9,285.7 L 335.8,285.0 L 336.3,283.5 L 335.4,284.9 L 334.4,284.4 L 333.7,281.8 L 333.4,281.4 L 332.7,281.2 L 333.6,284.2 L 334.3,284.9 L 334.8,285.2 L 336.8,285.4 L 337.7,286.8 L 335.6,288.2 L 335.1,287.4 L 334.5,286.8 L 334.0,286.8 L 335.5,288.3 L 333.5,291.7 L 326.2,294.8 L 325.6,292.3 L 322.6,291.5 L 322.1,289.2 L 318.8,290.6 L 318.6,287.8 L 313.7,286.1 L 316.5,283.7 L 314.5,281.5 L 314.4,279.1 L 312.6,279.1 L 312.1,277.5 L 308.8,275.8 L 309.1,273.4 L 310.5,273.1 L 310.8,272.4 L 305.4,272.2 L 302.6,269.8 L 300.6,270.0 L 299.2,267.9 L 299.8,264.5 L 302.8,264.1 L 302.6,262.6 L 306.9,265.3 L 309.2,261.9 L 314.9,261.0 L 314.9,258.6 L 322.3,258.7 L 323.1,257.5 L 322.2,255.2 L 325.8,256.2 L 326.4,254.0 L 329.6,253.3 L 328.7,251.9 L 331.5,249.2 L 330.9,246.4 L 333.1,246.2 L 333.0,244.1 L 331.7,243.4 L 334.2,241.3 L 330.9,238.0 L 332.3,235.0 L 330.7,232.9 L 333.4,230.8 L 335.1,231.6 L 335.8,231.4 L 335.4,228.3 L 331.4,224.6 L 332.0,222.6 L 339.4,217.5 L 337.5,215.3 L 338.4,214.3 L 336.3,214.5 L 337.7,210.7 L 336.9,207.2 L 334.5,205.3 L 334.9,203.4 L 336.7,205.0 Z" fill="#5a9e9a" stroke="#1e3c3a" stroke-width="0.8"/>
+
+  <path d="M 126.3,82.4 L 112.2,80.3 L 105.2,82.5 L 102.9,86.9 L 106.4,89.4 L 104.8,92.1 L 111.0,93.6 L 106.1,97.1 L 106.2,98.7 L 109.1,101.2 L 106.3,105.8 L 111.6,109.3 L 112.0,111.7 L 100.7,107.6 L 99.7,105.3 L 100.6,100.4 L 99.7,94.4 L 96.8,86.8 L 97.6,83.8 L 100.4,83.8 L 101.8,80.5 L 106.8,78.6 L 108.6,74.9 L 102.0,73.1 L 101.5,70.8 L 102.8,68.2 L 95.2,66.9 L 92.3,64.8 L 92.8,63.2 L 91.7,62.4 L 86.9,63.0 L 82.4,61.9 L 83.6,60.1 L 82.6,58.8 L 83.2,56.5 L 90.0,52.7 L 91.8,50.5 L 91.5,48.9 L 104.6,48.8 L 101.8,45.8 L 107.1,47.1 L 117.3,43.2 L 120.7,45.6 L 124.5,44.2 L 127.9,45.2 L 129.9,48.6 L 132.1,47.9 L 135.7,49.2 L 138.9,53.5 L 139.4,56.6 L 137.5,58.5 L 137.9,59.8 L 140.6,60.7 L 141.8,63.5 L 148.2,62.0 L 148.4,64.4 L 151.8,66.1 L 156.2,74.9 L 155.9,76.6 L 151.5,78.0 L 149.5,80.9 L 139.5,81.9 L 135.5,84.7 L 128.5,83.9 L 126.3,82.4 Z" fill="rgba(90,158,154,0.3)" stroke="#f5f0e8" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <circle cx="288.0" cy="229.9" r="7" fill="#f5f0e8" stroke="#1e3c3a" stroke-width="1.5"/>
+  <circle cx="288.0" cy="229.9" r="3.5" fill="#b06a2a"/>
+  <text x="299.0" y="234.9" font-family="Georgia, serif" font-size="13" fill="#f5f0e8" font-weight="bold">Patna</text>
+</svg>
+    </div>
+    <div class="text-area">
+      <div class="slide-tag">Zooming into <strong>India</strong></div>
+      <div class="slide-headline light">Street vending is essential urban work, largely without legal protection.</div>
+      <div class="ornament"></div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1.2vmin;">
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Street vendors sell fresh produce, cooked food and everyday goods in public spaces they have no legal right to occupy</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">They serve millions of households daily, providing convenience and cheaper alternatives</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Most lack basic infrastructure, stable tenure, and awareness of the rights the law affords them</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Our research focuses on Patna, Bihar, to understand how this sector works and what it costs those within it</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 4 — BIHAR MAP (real image)
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-map" data-duration="25">
+    <div class="map-visual">
+      <img id="patna-map" src={imgs['patna_map.jpg']} alt="Where Patna Vends — surveyed vendor locations across 206 marketplaces">
+    </div>
+    <div class="map-text">
+      <div class="slide-tag">Zooming into <strong>Patna, Bihar</strong></div>
+      <div class="slide-headline light" style="font-size:clamp(1.4rem,2vw,2.4rem); margin-bottom:1.2vmin;">Patna is home to an estimated 30,000 street vendors.</div>
+      <div class="ornament"></div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1.2vmin;">
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Capital city of Bihar — India's third most populous state</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Patna Municipal Corporation area has a population of 2.5 million across 75 wards</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(0.8rem,1.1vw,1.1rem);">Our survey covers the 40 wards with the highest vendor concentration, highlighted on the map</span>
+        </li>
+      </ul>
+      <div class="map-footnote">
+        Primary survey of 2,922 vendors across 40 wards of Patna, 2025.<br>
+        Each dot represents one surveyed vendor.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 5 — TRANSITION: Meet the vendors
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-text" data-duration="16">
+    <div class="slide-tag">Behind the data</div>
+    <div class="slide-headline" style="max-width:1000px; font-size:clamp(2rem,3.2vw,3.8rem);">Let's meet the people who make it work.</div>
+    <div class="ornament" style="margin:1.8vmin auto;"></div>
+    <p class="slide-body" style="max-width:820px;">Meena, Raju and Suresh have been working in the same market for over a decade.</p>
+    <div style="display:flex; gap:3vmin; justify-content:center; align-items:flex-start; margin-top:2vmin; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:1vmin;">
+        <div style="width:clamp(140px,18vmin,260px); height:clamp(140px,18vmin,260px); border-radius:50%; overflow:hidden; border:3px solid var(--terracotta);">
+          <img src={imgs['meena_portrait.jpg']} alt="Meena"
+            style="width:100%; height:auto; object-fit:cover; object-position:center top; transform:scale(1.3); transform-origin:top center;">
+        </div>
+        <div class="char-name">Meena</div>
+        <div class="char-role">Vegetable Seller · 58 years</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:1vmin;">
+        <div style="width:clamp(140px,18vmin,260px); height:clamp(140px,18vmin,260px); border-radius:50%; overflow:hidden; border:3px solid var(--terracotta);">
+          <img src={imgs['raju_portrait.jpg']} alt="Raju"
+            style="width:100%; height:auto; object-fit:cover; object-position:center top; transform:scale(1.3); transform-origin:top center;">
+        </div>
+        <div class="char-name">Raju</div>
+        <div class="char-role">Street Food Stall · 35 years</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:1vmin;">
+        <div style="width:clamp(140px,18vmin,260px); height:clamp(140px,18vmin,260px); border-radius:50%; overflow:hidden; border:3px solid var(--terracotta);">
+          <img src={imgs['suresh_portrait.jpg']} alt="Suresh"
+            style="width:100%; height:auto; object-fit:cover; object-position:center top; transform:scale(1.3); transform-origin:top center;">
+        </div>
+        <div class="char-name">Suresh</div>
+        <div class="char-role">Fruit Seller · 40 years</div>
+      </div>
+    </div>
+    <p class="slide-body" style="margin-top:2.5vmin; font-size:clamp(0.75rem,0.9vw,1rem); opacity:0.6;">Our data says 99% of street vendors have never changed their marketplace.</p>
+  </div>
+
+  <div class="slide slide-char-transition" data-duration="16" style="background:var(--sand); display:grid; grid-template-columns:1fr 1.6fr; align-items:center; height:100%;">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; text-align:left; height:100%; order:2;">
+      <div class="slide-tag">A day in the life</div>
+      <div class="slide-headline" style="max-width:60vw;">Let's start with one day in Meena's life.</div>
+      <div class="ornament" style="background:var(--terracotta);"></div>
+      <p class="slide-body" style="max-width:52vw;">Meena sells vegetables from the ground under a tarpaulin. She has worked the same spot for over a decade: buying at dawn, selling through the day, and discounting what remains by dusk.</p>
+      <div style="margin-top:2.5vmin; display:flex; flex-direction:column; gap:0.4vmin;">
+        <div class="char-name" style="text-align:left;">Meena</div>
+        <div class="char-role" style="text-align:left;">Vegetable Seller · 58 years</div>
+      </div>
+      <p style="margin-top:20px; font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.85rem); color:var(--brown); opacity:0.55; letter-spacing:0.03em; font-style:italic;">Meena, Raju and Suresh are fictional characters created to illustrate findings from real survey data.</p>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; height:100%; order:1; background:#000000;">
+      <img src={imgs['meena_portrait.jpg']} alt="Meena" style="height:72vh; width:100%; max-width:100%; object-fit:contain; display:block;">
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDES 6–10 — MEENA'S FRAMES
+  ══════════════════════════════════════════ -->
+
+  <!-- Frame 1 — 4:30am, Meena's home (REAL IMAGE) -->
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">Meena is up at 4:30am. The house is still dark.</span>
+    </div>
+    <img id="meena-frame1" class="framed" src={imgs['meena_1.jpg']} alt="Meena at 4:30am — dressing in the dark before her workday begins">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">Vendors set their own hours and keep them: 95% work seven days a week, averaging over nine hours a day, and that's excluding preparation time and the trip to the wholesale market.</span></div>
+  </div>
+
+  <!-- Frame 2 — 6am, Wholesale market (placeholder) -->
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">She is at the wholesale market before the city wakes, loading vegetables she will carry to her spot on the ground.</span>
+    </div>
+    <img src={imgs['meena_2.jpg']} alt="Meena at wholesale market" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">Every morning is a procurement run. Vendors hand-pick produce, judge quality and negotiate prices, before the city wakes. 75% buy directly from wholesale markets, and most do the buying themselves.</span></div>
+  </div>
+
+  <!-- Frame 3 — 9am, Vending spot (placeholder) -->
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">She sits behind her produce for nine hours, no chair, no proper shade, no permanent shelter.</span>
+    </div>
+    <img src={imgs['meena_3.jpg']} alt="Meena at her vending spot" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">Produce vendors price with a cost-plus rule: a fixed margin on that morning's wholesale cost, applied fast and adjusted as stock and demand shift through the day.</span></div>
+  </div>
+
+  <!-- Frame 4 — Midday rain (placeholder) -->
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">Rain arrives without warning. She covers what she can.</span>
+    </div>
+    <img src={imgs['meena_4.jpg']} alt="Meena in heavy rain" class="framed">
+    <div class="stat-bar"><span class="stat-label">No infrastructure</span><span class="stat-text">With no weather protection at most spots, vendors do what they can when the weather turns: 85% use plastic or cloth, others move stock to shade or pack up earlier in the day, but rain still means damaged produce and lost hours. And stopping isn't an option: barely 1 in 200 can afford not to sell at all on bad weather days.</span></div>
+  </div>
+
+  <!-- Frame 5 — Evening, distress selling (placeholder) -->
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">Whatever hasn't sold by dusk gets discounted. Wasted stock is a day's earnings gone.</span>
+    </div>
+    <img src={imgs['meena_5.jpg']} alt="Meena distress selling" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">By dusk, unsold produce is marked down to recover what it can before it spoils. A deliberate loss-cutting decision, but the loss is still real. 58% of produce vendors do this regularly. The Rs 40 of the morning becomes Rs 20 at dusk.</span></div>
+  </div>
+
+  
+  <div class="slide slide-char-transition" data-duration="16" style="background:var(--sand); display:grid; grid-template-columns:1fr 1.6fr; align-items:center; height:100%;">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; text-align:left; height:100%; order:2;">
+      <div class="slide-tag">A day in the life</div>
+      <div class="slide-headline" style="max-width:60vw;">Now, one day in Raju's life.</div>
+      <div class="ornament" style="background:var(--terracotta);"></div>
+      <p class="slide-body" style="max-width:52vw;">Raju sells street food from a coal-roasting cart, with his wife working alongside him. He has been at the same spot for years, and has been moved on from it more times than he can count.</p>
+      <div style="margin-top:2.5vmin; display:flex; flex-direction:column; gap:0.4vmin;">
+        <div class="char-name" style="text-align:left;">Raju</div>
+        <div class="char-role" style="text-align:left;">Street Food Stall · 35 years</div>
+      </div>
+      <p style="margin-top:20px; font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.85rem); color:var(--brown); opacity:0.55; letter-spacing:0.03em; font-style:italic;">Meena, Raju and Suresh are fictional characters created to illustrate findings from real survey data.</p>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; height:100%; order:1; background:#000000;">
+      <img src={imgs['raju_portrait.jpg']} alt="Raju" style="height:72vh; width:100%; max-width:100%; object-fit:contain; display:block;">
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDES 11–15 — RAJU'S FRAMES (all placeholders)
+  ══════════════════════════════════════════ -->
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">The workday starts at home, before the cart is out. Raju and his wife cook together in the early morning.</span>
+    </div>
+    <img src={imgs['raju_1.jpg']} alt="Raju preparing litti-chokha" class="framed">
+    <div class="stat-bar"><span class="stat-label">Before the stall opens</span><span class="stat-text">For street food vendors, the stall is the last stage of a much longer day. Food is prepared at home from early morning, the household is the kitchen and the family the workforce, a small production line running before the cart ever moves.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">He wheels the cart to his spot on the road. The same spot, every day, for years.</span>
+    </div>
+    <img src={imgs['raju_2.jpg']} alt="Raju setting up his cart" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">85% of vendors operate a stall or cart they built and maintain themselves, their own working capital. And nearly 9 in 10 already take digital payments: informal does not mean behind the times.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">The evening rush is the best part of the day. He and his wife barely pause.</span>
+    </div>
+    <img src={imgs['raju_3.jpg']} alt="Evening rush at Raju stall" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">The rush is the day’s payoff. An average street-food stall makes about Rs 530 (~£4.2) in profit a day, shared across everyone whose labour ran it.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">A municipal van arrives. Raju pushes the cart away mid-service. This has happened more times than he can count.</span>
+    </div>
+    <img src={imgs['raju_4.jpg']} alt="Raju eviction drive" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">In the six months before the survey, 33% of vendors had goods confiscated or were evicted, and 42% faced harassment by police or officials. Very few, just 1.3%, know about the 2014 law passed to protect them.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">The street is quiet now. He sits beside the packed cart, worn out by more than just the work.</span>
+    </div>
+    <img src={imgs['raju_5.jpg']} alt="Raju at night beside packed cart" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">Over 40% of vendors show signs of moderate to high psychological distress. No days off, no sick leave, no safety net, and long hours day after day.</span></div>
+  </div>
+
+  
+  <div class="slide slide-char-transition" data-duration="16" style="background:var(--sand); display:grid; grid-template-columns:1fr 1.6fr; align-items:center; height:100%;">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; text-align:left; height:100%; order:2;">
+      <div class="slide-tag">A day in the life</div>
+      <div class="slide-headline" style="max-width:60vw;">And one day in Suresh's life.</div>
+      <div class="ornament" style="background:var(--terracotta);"></div>
+      <p class="slide-body" style="max-width:52vw;">Suresh sells fruit from a cart along the main road. His 15 year old son Arun joins him after school each day. His supplier has known him for over a decade. So has this corner of the street.</p>
+      <div style="margin-top:2.5vmin; display:flex; flex-direction:column; gap:0.4vmin;">
+        <div class="char-name" style="text-align:left;">Suresh</div>
+        <div class="char-role" style="text-align:left;">Fruit Seller · 40 years</div>
+      </div>
+      <p style="margin-top:20px; font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.85rem); color:var(--brown); opacity:0.55; letter-spacing:0.03em; font-style:italic;">Meena, Raju and Suresh are fictional characters created to illustrate findings from real survey data.</p>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; height:100%; order:1; background:#000000;">
+      <img src={imgs['suresh_portrait.jpg']} alt="Suresh" style="height:88vh; width:100%; max-width:100%; object-fit:contain; display:block;">
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDES 16–20 — SURESH'S FRAMES (all placeholders)
+  ══════════════════════════════════════════ -->
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">Suresh is up at 4am. His son Arun is still asleep.</span>
+    </div>
+    <img src={imgs['suresh_1.jpg']} alt="Suresh waking at 4am" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">About a third of vendors entered the street vending sector by joining an already established family business. Over half in our sample have been vending for more than 10 years. Vending is not transitional work but life-long occupation passed through generations.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">His supplier recognises him before he speaks. They have been doing this for over a decade.</span>
+    </div>
+    <img src={imgs['suresh_2.jpg']} alt="Suresh and supplier" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">54% of vendors buy from the same supplier year after year. With no written or formal contracts in the sector, that relationship does the work of one and helps secure stock, steady prices and often informal credit. Trust is the infrastructure.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">He sets out his fruit and opens for the day. The same corner, again.</span>
+    </div>
+    <img src={imgs['suresh_3.jpg']} alt="Suresh arranging fruit" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">Location is a vendor's most valuable asset. 84% of vendors set up on main roads, positioned where commuter footfall is highest. Most have occupied the same few square metres of public space for over a decade.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">Arun comes straight from school. No pause between the two halves of his day.</span>
+    </div>
+    <img src={imgs['suresh_4.jpg']} alt="Arun arrives at stall" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">90% of vendors with helpers rely entirely on unpaid family labour. For many, vending is less a choice than a path set by the family they were born into.</span></div>
+  </div>
+
+  <div class="slide slide-frame" data-duration="20">
+    <div class="frame-label">
+      <span class="frame-sentence">They pack down together at dusk. Tomorrow it starts again at 4am.</span>
+    </div>
+    <img src={imgs['suresh_5.jpg']} alt="Suresh and Arun packing at dusk" class="framed">
+    <div class="stat-bar"><span class="stat-label">From our survey</span><span class="stat-text">For about half of vendors, the reason they began was simple: no other work could be found. And street vending is rarely a stepping stone — it is, for most, a permanent livelihood.</span></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 26 — CONCLUSION
+  ══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════
+       SLIDE — WHAT DID WE LEARN
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-conclusion" data-duration="20">
+    <div class="left" style="grid-column:1/-1; width:100%; text-align:center; align-items:center; padding: 5vmin 8.5vmin;">
+      <div class="slide-tag" style="color:var(--ochre);">What did we learn?</div>
+      <div class="slide-headline light">Smarter than assumed.<br>More precarious than acknowledged.</div>
+      <div class="ornament" style="margin:1.8vmin auto;"></div>
+      <ul style="list-style:none; padding:0; margin:0 0 32px 0; display:flex; flex-direction:column; gap:1vmin; text-align:left; max-width:70vw;">
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(1rem,1.3vw,1.2rem);">Most vendors work long hours, all seven days of the week</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(1rem,1.3vw,1.2rem);">Their livelihoods are built on years of accumulated relationships — with suppliers, customers and neighbouring vendors</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(1rem,1.3vw,1.2rem);">Without shelter or storage infrastructure, weather and spoilage directly cut into their earnings</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(1rem,1.3vw,1.2rem);">Evictions are routine and unpredictable, disrupting income without warning or compensation</span>
+        </li>
+        <li style="display:flex; gap:1vmin; align-items:flex-start;">
+          <span style="color:var(--ochre); font-size:clamp(0.8rem,1vw,1rem); line-height:1.6; flex-shrink:0;">—</span>
+          <span class="slide-body light" style="font-size:clamp(1rem,1.3vw,1.2rem);">The work is passed down through families — for many, there was no other path into this occupation</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE — POLICY DIRECTIONS
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-conclusion" data-duration="20">
+    <div class="right" style="grid-column:1/-1; width:100%; border-left:none; padding: 5vmin 8.5vmin;">
+      <div class="slide-tag" style="color:var(--ochre);">Policy directions</div>
+      <div class="slide-headline light" style="margin-bottom:2.8vmin;">What would help?</div>
+      <div class="policy-item">
+        <div class="policy-dot"></div>
+        <div class="policy-text">Design vending zones that are spatially close to existing markets — vendors resist relocation above all else</div>
+      </div>
+      <div class="policy-item">
+        <div class="policy-dot"></div>
+        <div class="policy-text">Provide weather infrastructure at vending spots — covered stalls would directly protect earnings</div>
+      </div>
+      <div class="policy-item">
+        <div class="policy-dot"></div>
+        <div class="policy-text">Enforce and disseminate the Street Vendors Act 2014 — only 1.3% of vendors currently know it exists</div>
+      </div>
+      <div class="policy-item">
+        <div class="policy-dot"></div>
+        <div class="policy-text">Formalise supplier relationships — simple contracts could replace the informal trust networks vendors currently depend on</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDES 27–28 — FIELD IMAGES
+  ══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════
+       TRANSITION — INTO FIELD IMAGES
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-title" data-duration="5">
+    <div class="eyebrow">Primary Survey · Patna, Bihar · 2025</div>
+    <div class="title-ornament"></div>
+    <h1 style="font-size:clamp(2.4rem,5vw,4.5rem);">Now let's see some real images from the field.</h1>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       FIELD PHOTOS — 4 individual slides
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-field-photo" data-duration="10" style="display:grid; grid-template-columns:1fr 1.6fr; background:var(--charcoal);">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; order:2;">
+      <div style="font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.9rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:1.5vmin;">From the field · Patna, Bihar · 2025</div>
+      <p style="font-family:'Playfair Display',serif; font-size:clamp(1.2rem,1.8vw,1.8rem); color:var(--cream); line-height:1.6;">An evening street market in Patna. Vegetable stalls, food carts and pedestrian traffic occupy the same road — a typical scene in the 206 marketplaces we surveyed, and the kind of corner Suresh works every day.</p>
+    </div>
+    <div style="overflow:hidden; order:1;">
+      <img src={imgs['field_4.jpg']} alt="Field photo 4" style="width:100%;height:100%;object-fit:contain;background:var(--charcoal);">
+    </div>
+  </div>
+
+  <div class="slide slide-field-photo" data-duration="10" style="display:grid; grid-template-columns:1fr 1.6fr; background:var(--charcoal);">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; order:2;">
+      <div style="font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.9rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:1.5vmin;">From the field · Patna, Bihar · 2025</div>
+      <p style="font-family:'Playfair Display',serif; font-size:clamp(1.2rem,1.8vw,1.8rem); color:var(--cream); line-height:1.6;">A vegetable vendor seated on the ground between baskets of onions, limes and greens, completing a cash transaction. Most vegetable vendors in our survey, like Meena, operate without a stall or any fixed structure.</p>
+    </div>
+    <div style="overflow:hidden; order:1;">
+      <img src={imgs['field_2.jpg']} alt="Field photo 2" style="width:100%;height:100%;object-fit:contain;background:var(--charcoal);">
+    </div>
+  </div>
+
+  <div class="slide slide-field-photo" data-duration="10" style="display:grid; grid-template-columns:1fr 1.6fr; background:var(--charcoal);">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; order:2;">
+      <div style="font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.9rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:1.5vmin;">From the field · Patna, Bihar · 2025</div>
+      <p style="font-family:'Playfair Display',serif; font-size:clamp(1.2rem,1.8vw,1.8rem); color:var(--cream); line-height:1.6;">A marketplace at night. Vendors work under tarpaulins and bare bulbs on public ground they have no legal right to occupy.</p>
+    </div>
+    <div style="overflow:hidden; order:1;">
+      <img src={imgs['field_3.jpg']} alt="Field photo 3" style="width:100%;height:100%;object-fit:contain;background:var(--charcoal);">
+    </div>
+  </div>
+
+  <div class="slide slide-field-photo" data-duration="10" style="display:grid; grid-template-columns:1fr 1.6fr; background:var(--charcoal);">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; order:2;">
+      <div style="font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.9rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:1.5vmin;">From the field · Patna, Bihar · 2025</div>
+      <p style="font-family:'Playfair Display',serif; font-size:clamp(1.2rem,1.8vw,1.8rem); color:var(--cream); line-height:1.6;">A street food vendor's cart at night, with a glass display case and metal containers. This is what Raju's cart looks like in real life.</p>
+    </div>
+    <div style="overflow:hidden; order:1;">
+      <img src={imgs['field_1.jpg']} alt="Field photo 1" style="width:100%;height:100%;object-fit:contain;background:var(--charcoal);">
+    </div>
+  </div>
+
+  <div class="slide slide-field-photo" data-duration="10" style="display:grid; grid-template-columns:1fr 1.6fr; background:var(--charcoal);">
+    <div style="display:flex; flex-direction:column; justify-content:center; padding:0 7vmin 0 3.5vmin; order:2;">
+      <div style="font-family:'Lora',serif; font-size:clamp(0.65rem,0.8vw,0.9rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:1.5vmin;">From the field · Patna, Bihar · 2025</div>
+      <p style="font-family:'Playfair Display',serif; font-size:clamp(1.2rem,1.8vw,1.8rem); color:var(--cream); line-height:1.6;">A moment during fieldwork. Researchers with a vendor at one of the 206 marketplaces surveyed across Patna.</p>
+    </div>
+    <div style="overflow:hidden; order:1;">
+      <img src={imgs['fgd_funny.JPG']} alt="Field photo 5" style="width:100%;height:100%;object-fit:contain;background:var(--charcoal);">
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       CREDITS SLIDE
+  ══════════════════════════════════════════ -->
+  <div class="slide slide-title" data-duration="15">
+    <div class="eyebrow">Credits</div>
+    <div class="title-ornament"></div>
+    <div class="mobile-credits-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:60px 100px; max-width:1000px; text-align:left; margin-top:8px;">
+
+      <div>
+        <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:12px;">Researchers</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+          <div style="display:flex; align-items:baseline; gap:1.4vmin;">
+            <span style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream);">Swati Dhingra</span>
+            <span style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); color:var(--sand); opacity:0.7;">sdhingra.com</span>
+          </div>
+          <div style="display:flex; align-items:baseline; gap:1.4vmin;">
+            <span style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream);">Muskan Jain</span>
+            <span style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); color:var(--sand); opacity:0.7;">jainmuskan.com</span>
+          </div>
+          <div style="display:flex; align-items:baseline; gap:1.4vmin;">
+            <span style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream);">Lachi Singh</span>
+            <span style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); color:var(--sand); opacity:0.7;">lachisingh.com</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:12px;">Illustrations</div>
+        <div style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream); line-height:1.8;">Nikkhil Nair</div>
+        <div style="font-family:'Lora',serif; font-size:clamp(0.85rem,1vw,1.1rem); color:var(--sand); opacity:0.7; margin-top:4px;">@vander.tenn</div>
+      </div>
+
+      <div>
+        <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:12px;">Survey Partner</div>
+        <div style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream); line-height:1.8;">Sunai Consultancy</div>
+      </div>
+
+      <div>
+        <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:12px;">Field Work Approved By</div>
+        <div style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream); line-height:1.8;">Patna Municipal Corporation</div>
+      </div>
+
+      <div style="grid-column:1/-1;">
+        <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.2em; text-transform:uppercase; color:var(--ochre); margin-bottom:12px;">Funded By</div>
+        <div style="font-family:'Playfair Display',serif; font-size:clamp(0.9rem,1.2vw,1.4rem); color:var(--cream); line-height:1.8;">International Growth Centre (IGC) &nbsp;·&nbsp; HER Grant at STICERD, LSE &nbsp;·&nbsp; British Academy / Leverhulme Small Research Grant Scheme</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:2.5vmin; justify-content:center; margin-top:8px;">
+        <img src={imgs['qr_code.png']} alt="QR code for feedback form"
+          style="width:140px; height:140px; image-rendering:pixelated; border-radius:8px;">
+        <div style="text-align:left;">
+          <div style="font-family:'Lora',serif; font-size:clamp(0.75rem,0.9vw,1rem); letter-spacing:0.18em; text-transform:uppercase; color:var(--ochre); margin-bottom:0.7vmin;">Leave your feedback</div>
+          <div style="font-family:'Lora',serif; font-size:clamp(0.85rem,1vw,1.1rem); color:var(--sand); line-height:1.6;">Scan to share your thoughts<br>about what you saw today.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #slideshow -->
+
+<!-- Progress bar & dots -->
+<div id="progress-bar"></div>
+<div id="slide-counter"></div>
+
+<script is:inline>
+
+// ── SLIDESHOW ENGINE ──
+const slides      = Array.from(document.querySelectorAll('#slideshow > .slide'));
+const progressBar = document.getElementById('progress-bar');
+const counter     = document.getElementById('slide-counter');
+let current       = 0;
+let timer         = null;
+let progressTimer = null;
+let inactivityTimer = null;
+let isInteracting = false;
+const INACTIVITY_RESUME = 5000; // resume after 20s no touch
+
+// Build dots
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' current' : '');
+  counter.appendChild(d);
+});
+
+function getDuration(slide) {
+  return parseInt(slide.dataset.duration || '10') * 1000;
+}
+
+
+function goTo(index, skipAnimation) {
+  slides[current].classList.remove('active');
+  counter.children[current].classList.remove('current');
+  current = (index + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  counter.children[current].classList.add('current');
+  startProgress(getDuration(slides[current]));
+}
+
+function startProgress(duration) {
+  clearInterval(progressTimer);
+  clearTimeout(timer);
+  progressBar.style.transition = 'none';
+  progressBar.style.width = '0%';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      progressBar.style.transition = `width ${duration}ms linear`;
+      progressBar.style.width = '100%';
+    });
+  });
+  timer = setTimeout(() => {
+    if (!isInteracting) goTo(current + 1);
+  }, duration);
+}
+
+function pauseAutoplay() {
+  isInteracting = true;
+  clearTimeout(timer);
+  clearInterval(progressTimer);
+  progressBar.style.transition = 'none';
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
+}
+
+function resumeAutoplay() {
+  isInteracting = false;
+  startProgress(getDuration(slides[current]));
+}
+
+
+// Touch/click on slide advances it (if no caption open)
+// ── SWIPE NAVIGATION ──
+let touchStartX = null;
+let touchStartY = null;
+const SWIPE_THRESHOLD = 50;
+
+document.getElementById('slideshow').addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.getElementById('slideshow').addEventListener('touchend', function(e) {
+  if (touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  // Only register as swipe if horizontal movement dominates
+  if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+  pauseAutoplay();
+  if (dx < 0) {
+    goTo(current + 1); // swipe left → next
+  } else {
+    goTo(current - 1); // swipe right → previous
+  }
+  touchStartX = null;
+  touchStartY = null;
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
+});
+
+// Also keep click for non-touch screens (left half = back, right half = forward)
+document.getElementById('slideshow').addEventListener('click', function(e) {
+  pauseAutoplay();
+  if (e.clientX < window.innerWidth / 2) {
+    goTo(current - 1); // left half → previous
+  } else {
+    goTo(current + 1); // right half → next
+  }
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
+});
+
+// Kick off
+startProgress(getDuration(slides[current]));
+</script>
+</body>
+</html>
