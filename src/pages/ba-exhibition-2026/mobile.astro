@@ -597,7 +597,7 @@ for (const [path, mod] of Object.entries(modules)) {
        more breathing room relative to portrait height instead
        of the kiosk-tuned vmin values. */
     .frame-label { flex-basis: 16vh !important; }
-    .stat-bar    { flex-basis: 20vh !important; }
+    .stat-bar    { flex-basis: 30vh !important; }
     .frame-label .frame-sentence { padding: 2vh 4vw !important; }
     .stat-bar { padding: 1.5vh 4vw !important; }
 
@@ -791,21 +791,21 @@ for (const [path, mod] of Object.entries(modules)) {
     }
 
     /* ── COMIC FRAME: bigger text to fill landscape image blank space ── */
-    .frame-label { flex-basis: 18vh !important; }
-    .stat-bar    { flex-basis: 26vh !important; }
+    .frame-label { flex-basis: 16vh !important; }
+    .stat-bar    { flex-basis: 34vh !important; }
     .frame-label .frame-sentence {
       font-size: clamp(0.9rem, 4vw, 1.25rem) !important;
       line-height: 1.4 !important;
       padding: 2vh 6vw !important;
     }
-    .stat-bar { padding: 2vh 6vw !important; gap: 0.8vh !important; }
+    .stat-bar { padding: 2.5vh 6vw !important; gap: 1vh !important; overflow-y: auto !important; }
     .stat-label {
-      font-size: clamp(0.65rem, 2.8vw, 0.85rem) !important;
+      font-size: clamp(0.7rem, 3vw, 0.9rem) !important;
       letter-spacing: 0.18em !important;
     }
     .stat-text {
-      font-size: clamp(0.8rem, 3.5vw, 1.05rem) !important;
-      line-height: 1.5 !important;
+      font-size: clamp(0.85rem, 3.8vw, 1.15rem) !important;
+      line-height: 1.55 !important;
     }
 
     /* ── CREDITS SLIDE ── */
@@ -839,8 +839,8 @@ for (const [path, mod] of Object.entries(modules)) {
      original side-by-side layouts, since width is plentiful,
      but still relax the comic-frame chrome sizing. */
   @media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
-    .frame-label { flex-basis: 22vh !important; }
-    .stat-bar    { flex-basis: 26vh !important; }
+    .frame-label { flex-basis: 20vh !important; }
+    .stat-bar    { flex-basis: 32vh !important; }
   }
 
 
