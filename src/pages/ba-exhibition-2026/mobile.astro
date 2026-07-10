@@ -31,8 +31,6 @@ for (const [path, mod] of Object.entries(modules)) {
     --ochre:    #ebb978;
     --brown:    #2e4a4a;
     --charcoal: #1e3c3a;
-    --overlay:  rgba(18,38,36,0.78);
-    --caption-bg: rgba(245,240,232,0.97);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -114,38 +112,6 @@ for (const [path, mod] of Object.entries(modules)) {
     margin: 2.5vmin auto;
   }
 
-  /* Image-only slides (maps, frames) */
-  .slide-image {
-    background: var(--charcoal);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .slide-image img {
-    max-width:100%; max-height:100%;
-    object-fit:contain;
-    display:block;
-  }
-
-  /* Text + image split */
-  .slide-split {
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    background: var(--cream);
-  }
-  .slide-split .left {
-    display:flex; flex-direction:column;
-    justify-content:center;
-    padding: 5vmin 4vmin;
-    background: var(--cream);
-  }
-  .slide-split .right {
-    position:relative;
-    overflow:hidden;
-  }
-  .slide-split .right img {
-    width:100%; height:100%;
-    object-fit:cover;
-  }
-
   /* Text-only / transition slides */
   .slide-text {
     background: var(--sand);
@@ -154,30 +120,6 @@ for (const [path, mod] of Object.entries(modules)) {
     padding: 4vmin 7vmin;
     text-align:center;
     overflow:hidden;
-  }
-
-  /* Placeholder for missing images */
-  .img-placeholder {
-    width:100%; height:100%;
-    background: linear-gradient(135deg, #c8d8d6 0%, #8aada8 100%);
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    gap: 1.2vmin;
-    color: var(--brown);
-  }
-  .img-placeholder .ph-icon {
-    font-size: clamp(1.8rem,2.5vw,3rem);
-    opacity: 0.5;
-  }
-  .img-placeholder .ph-label {
-    font-family: 'Lora', serif;
-    font-size: clamp(0.7rem,0.8vw,0.9rem);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    opacity: 0.7;
-    max-width: 240px;
-    text-align:center;
-    line-height:1.5;
   }
 
   /* Comic frame slides */
@@ -215,13 +157,6 @@ for (const [path, mod] of Object.entries(modules)) {
     display: block;
     background: #000;
   }
-  .slide-frame .img-placeholder {
-    flex: 1 1 0;
-    min-height: 0;
-    display:flex; align-items:center; justify-content:center;
-    background: #000;
-  }
-
   /* ── STAT BAR — fixed height so image area is constant ── */
   .stat-bar {
     flex: 0 0 12vmin;
@@ -277,45 +212,11 @@ for (const [path, mod] of Object.entries(modules)) {
     margin: 20px 0;
   }
 
-  /* Stat callouts */
-  .stat-row {
-    display:flex; gap: 3.5vmin;
-    margin-top: 2.5vmin;
-    flex-wrap:wrap;
-  }
-  .stat-item { display:flex; flex-direction:column; gap:0.4vmin; }
-  .stat-num {
-    font-family:'Playfair Display', serif;
-    font-size:clamp(1.8rem,2.5vw,3rem);
-    color: var(--terracotta);
-    font-weight:700;
-  }
-  .stat-desc {
-    font-family:'Lora', serif;
-    font-size:clamp(0.8rem,1vw,1.1rem);
-    color: var(--brown);
-    max-width:200px;
-    line-height:1.4;
-  }
-
   /* Character intro cards */
   .character-strip {
     display:flex; gap:40px;
     justify-content:center;
     margin-top:3vmin;
-  }
-  .char-card {
-    display:flex; flex-direction:column;
-    align-items:center; gap:1vmin;
-    max-width:180px; text-align:center;
-  }
-  .char-avatar {
-    width:14vmin; height:14vmin;
-    border-radius:50%;
-    background: linear-gradient(135deg, #7ab0aa 0%, #2e6460 100%);
-    display:flex; align-items:center; justify-content:center;
-    font-size:clamp(2rem,3vw,3.5rem);
-    border: 0.3vmin solid var(--terracotta);
   }
   .char-name {
     font-family:'Playfair Display', serif;
@@ -364,7 +265,6 @@ for (const [path, mod] of Object.entries(modules)) {
     background: var(--charcoal);
     display:grid;
     grid-template-columns: 1.6fr 0.4fr;
-    height: 100vh;
     overflow: hidden;
   }
   .slide-map .map-visual {
@@ -376,7 +276,7 @@ for (const [path, mod] of Object.entries(modules)) {
   }
   .slide-map .map-visual img {
     max-width:100%;
-    max-height: 97vh;
+    max-height:100%;
     width: auto;
     height: auto;
     object-fit:contain;
@@ -454,28 +354,8 @@ for (const [path, mod] of Object.entries(modules)) {
     line-height:1.6;
   }
 
-  /* QR placeholder */
-  .qr-box {
-    width:9vmin; height:9vmin;
-    border:2px solid var(--ochre);
-    display:flex; align-items:center; justify-content:center;
-    flex-direction:column; gap:0.5vmin;
-    padding:1vmin;
-  }
-  .qr-box .qr-inner {
-    width:100%; height:100%;
-    background: repeating-linear-gradient(
-      0deg, var(--ochre) 0px, var(--ochre) 2px, transparent 2px, transparent 6px
-    ),
-    repeating-linear-gradient(
-      90deg, var(--ochre) 0px, var(--ochre) 2px, transparent 2px, transparent 6px
-    );
-    opacity:0.3;
-  }
-
   /* ── RESPONSIVE OVERRIDES (tablet) ── */
   @media (max-width: 768px) {
-    .slide-split { grid-template-columns: 1fr; }
     .slide-map { grid-template-columns: 1fr; }
     .slide-conclusion { grid-template-columns: 1fr; }
     .slide-placeholder-map { grid-template-columns: 1fr; }
@@ -560,7 +440,6 @@ for (const [path, mod] of Object.entries(modules)) {
     }
 
     /* Standard split / map / conclusion / placeholder-map layouts */
-    .slide-split,
     .slide-map,
     .slide-conclusion,
     .slide-placeholder-map {
@@ -570,8 +449,7 @@ for (const [path, mod] of Object.entries(modules)) {
     .slide-map .map-visual { padding: 1vh 3vw !important; }
     .slide-map .map-text   { padding: 2vh 4vw !important; }
     .slide-conclusion .left,
-    .slide-conclusion .right,
-    .slide-split .left {
+    .slide-conclusion .right {
       padding: 2.5vh 4vw !important;
     }
     .slide-conclusion .right {
@@ -593,14 +471,6 @@ for (const [path, mod] of Object.entries(modules)) {
       grid-column: auto !important;
     }
 
-    /* Comic-frame slides: give the sentence bar and stat bar
-       more breathing room relative to portrait height instead
-       of the kiosk-tuned vmin values. */
-    .frame-label { flex-basis: 16vh !important; }
-    .stat-bar    { flex-basis: 30vh !important; }
-    .frame-label .frame-sentence { padding: 2vh 4vw !important; }
-    .stat-bar { padding: 1.5vh 4vw !important; }
-
     /* Title slide padding */
     .slide-title { padding: 6vh 6vw !important; }
 
@@ -610,10 +480,6 @@ for (const [path, mod] of Object.entries(modules)) {
     /* Character strip (three portraits) wraps instead of
        squeezing onto one line */
     .character-strip { gap: 16px !important; flex-wrap: wrap; }
-    .char-card { max-width: 110px; }
-
-    /* Stat rows wrap cleanly */
-    .stat-row { gap: 20px !important; }
 
     /* Slide counter dots: slightly larger tap/visual target */
     .dot { width: 6px; height: 6px; }
@@ -790,15 +656,32 @@ for (const [path, mod] of Object.entries(modules)) {
       letter-spacing: 0.15em !important;
     }
 
-    /* ── COMIC FRAME: bigger text to fill landscape image blank space ── */
-    .frame-label { flex-basis: 16vh !important; }
-    .stat-bar    { flex-basis: 34vh !important; }
+    /* ── COMIC FRAME: flush stack — label top, image fills, stat bottom ── */
+    .frame-label {
+      flex: 0 0 auto !important;
+      padding: 1.5vh 6vw !important;
+    }
     .frame-label .frame-sentence {
       font-size: clamp(0.9rem, 4vw, 1.25rem) !important;
       line-height: 1.4 !important;
-      padding: 2vh 6vw !important;
+      padding: 0 !important;
     }
-    .stat-bar { padding: 2.5vh 6vw !important; gap: 1vh !important; overflow-y: auto !important; }
+    /* Image fills the gap between label and stat bar, whole image visible */
+    .slide-frame img.framed {
+      flex: 1 1 0 !important;
+      min-height: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
+      display: block !important;
+    }
+    /* Stat bar sized to its content so text is never clipped */
+    .stat-bar {
+      flex: 0 0 auto !important;
+      padding: 2vh 6vw !important;
+      gap: 0.8vh !important;
+      overflow: visible !important;
+    }
     .stat-label {
       font-size: clamp(0.7rem, 3vw, 0.9rem) !important;
       letter-spacing: 0.18em !important;
@@ -839,8 +722,8 @@ for (const [path, mod] of Object.entries(modules)) {
      original side-by-side layouts, since width is plentiful,
      but still relax the comic-frame chrome sizing. */
   @media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
-    .frame-label { flex-basis: 20vh !important; }
-    .stat-bar    { flex-basis: 32vh !important; }
+    .frame-label { flex: 0 0 auto !important; }
+    .stat-bar    { flex: 0 0 auto !important; }
   }
 
 
@@ -1510,10 +1393,9 @@ const progressBar = document.getElementById('progress-bar');
 const counter     = document.getElementById('slide-counter');
 let current       = 0;
 let timer         = null;
-let progressTimer = null;
 let inactivityTimer = null;
 let isInteracting = false;
-const INACTIVITY_RESUME = 5000; // resume after 20s no touch
+const INACTIVITY_RESUME = 5000; // resume after 5s no touch
 
 // Build dots
 slides.forEach((_, i) => {
@@ -1526,8 +1408,7 @@ function getDuration(slide) {
   return parseInt(slide.dataset.duration || '10') * 1000;
 }
 
-
-function goTo(index, skipAnimation) {
+function goTo(index) {
   slides[current].classList.remove('active');
   counter.children[current].classList.remove('current');
   current = (index + slides.length) % slides.length;
@@ -1537,7 +1418,6 @@ function goTo(index, skipAnimation) {
 }
 
 function startProgress(duration) {
-  clearInterval(progressTimer);
   clearTimeout(timer);
   progressBar.style.transition = 'none';
   progressBar.style.width = '0%';
@@ -1555,7 +1435,6 @@ function startProgress(duration) {
 function pauseAutoplay() {
   isInteracting = true;
   clearTimeout(timer);
-  clearInterval(progressTimer);
   progressBar.style.transition = 'none';
   clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
@@ -1566,8 +1445,6 @@ function resumeAutoplay() {
   startProgress(getDuration(slides[current]));
 }
 
-
-// Touch/click on slide advances it (if no caption open)
 // ── SWIPE NAVIGATION ──
 let touchStartX = null;
 let touchStartY = null;
@@ -1585,27 +1462,15 @@ document.getElementById('slideshow').addEventListener('touchend', function(e) {
   // Only register as swipe if horizontal movement dominates
   if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
   pauseAutoplay();
-  if (dx < 0) {
-    goTo(current + 1); // swipe left → next
-  } else {
-    goTo(current - 1); // swipe right → previous
-  }
+  goTo(dx < 0 ? current + 1 : current - 1);
   touchStartX = null;
   touchStartY = null;
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
 });
 
-// Also keep click for non-touch screens (left half = back, right half = forward)
+// Click for non-touch screens (left half = back, right half = forward)
 document.getElementById('slideshow').addEventListener('click', function(e) {
   pauseAutoplay();
-  if (e.clientX < window.innerWidth / 2) {
-    goTo(current - 1); // left half → previous
-  } else {
-    goTo(current + 1); // right half → next
-  }
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(resumeAutoplay, INACTIVITY_RESUME);
+  goTo(e.clientX < window.innerWidth / 2 ? current - 1 : current + 1);
 });
 
 // Kick off
