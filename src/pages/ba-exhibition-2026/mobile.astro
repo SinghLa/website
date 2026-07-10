@@ -666,12 +666,12 @@ for (const [path, mod] of Object.entries(modules)) {
       line-height: 1.4 !important;
       padding: 0 !important;
     }
-    /* Image fills the gap between label and stat bar, whole image visible */
+    /* Image takes remaining space; stat bar sits right below it */
     .slide-frame img.framed {
       flex: 1 1 0 !important;
       min-height: 0 !important;
       width: 100% !important;
-      height: auto !important;
+      height: 100% !important;
       object-fit: contain !important;
       display: block !important;
     }
@@ -681,6 +681,7 @@ for (const [path, mod] of Object.entries(modules)) {
       padding: 2vh 6vw !important;
       gap: 0.8vh !important;
       overflow: visible !important;
+      justify-content: flex-start !important;
     }
     .stat-label {
       font-size: clamp(0.7rem, 3vw, 0.9rem) !important;
