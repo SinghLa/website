@@ -442,15 +442,18 @@ for (const [path, mod] of Object.entries(modules)) {
       margin-top: 0.8vh !important;
     }
 
-    /* Standard split / map / conclusion / placeholder-map layouts */
+    /* Standard map / conclusion / placeholder-map layouts:
+       allow scrolling, rows size to content instead of fixed vh */
     .slide-map,
     .slide-conclusion,
     .slide-placeholder-map {
       grid-template-columns: 1fr !important;
-      grid-template-rows: 48vh 52vh;
+      grid-template-rows: auto auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
     }
     .slide-map .map-visual { padding: 1vh 3vw !important; }
-    .slide-map .map-text   { padding: 2vh 4vw !important; }
+    .slide-map .map-text   { padding: 2vh 4vw !important; overflow: visible !important; }
     .slide-conclusion .left,
     .slide-conclusion .right {
       padding: 2.5vh 4vw !important;
@@ -551,8 +554,13 @@ for (const [path, mod] of Object.entries(modules)) {
     .slide-placeholder-map .ornament { margin: 0.8vh 0 !important; }
     .slide-placeholder-map .text-area {
       padding: 2vh 4vw !important;
-      justify-content: center !important;
+      justify-content: flex-start !important;
       gap: 0.4vh !important;
+      overflow: visible !important;
+    }
+    .slide-placeholder-map .map-area img,
+    .slide-placeholder-map .map-area svg {
+      max-height: 45vh !important;
     }
     .slide-placeholder-map ul { gap: 0.6vh !important; }
 
@@ -573,8 +581,12 @@ for (const [path, mod] of Object.entries(modules)) {
     .slide-map .ornament { margin: 0.8vh 0 !important; }
     .slide-map .map-text {
       padding: 1.5vh 4vw !important;
-      justify-content: center !important;
+      justify-content: flex-start !important;
       gap: 0.4vh !important;
+      overflow: visible !important;
+    }
+    .slide-map .map-visual img {
+      max-height: 45vh !important;
     }
     .slide-map ul { gap: 0.5vh !important; }
     .slide-map .map-footnote {
@@ -639,15 +651,24 @@ for (const [path, mod] of Object.entries(modules)) {
       margin-top: 0.8vmin !important;
     }
 
-    /* Field photos: give more room to text since landscape images
-       leave blank space. Image row 50vh, text row 50vh. */
+    /* Field photos: allow scrolling, rows size to content,
+       image capped so text is never clipped */
     .slide-field-photo,
     #slideshow > .slide[style*="grid-template-columns:1fr 1.6fr"] {
-      grid-template-rows: 50vh 50vh !important;
+      grid-template-rows: auto auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
     }
     .slide-field-photo > div {
       padding: 2.5vh 6vw !important;
-      justify-content: center !important;
+      justify-content: flex-start !important;
+      overflow: visible !important;
+    }
+    .slide-field-photo > div:last-child img {
+      max-height: 45vh !important;
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
     }
     .slide-field-photo > div:first-child p {
       font-size: clamp(0.9rem, 4vw, 1.25rem) !important;
