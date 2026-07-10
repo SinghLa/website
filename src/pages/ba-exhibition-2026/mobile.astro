@@ -130,6 +130,9 @@ for (const [path, mod] of Object.entries(modules)) {
     flex-direction:column;
     overflow:hidden;
   }
+  /* On portrait phones the stat text can be taller than the
+     remaining viewport after the image. Allow the slide to
+     scroll so the text is always reachable, instead of clipping. */
   /* sentence bar at top — fixed height so image area is constant */
   .frame-label {
     flex: 0 0 9vmin;
@@ -657,6 +660,11 @@ for (const [path, mod] of Object.entries(modules)) {
     }
 
     /* ── COMIC FRAME: flush stack — label top, image fills, stat bottom ── */
+    /* Allow scrolling when stat text is too tall for the viewport */
+    .slide-frame {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
     .frame-label {
       flex: 0 0 auto !important;
       padding: 1.5vh 6vw !important;
@@ -668,10 +676,11 @@ for (const [path, mod] of Object.entries(modules)) {
     }
     /* Image takes remaining space; stat bar sits right below it */
     .slide-frame img.framed {
-      flex: 1 1 0 !important;
+      flex: 0 1 auto !important;
       min-height: 0 !important;
       width: 100% !important;
-      height: 100% !important;
+      height: auto !important;
+      max-height: 50vh !important;
       object-fit: contain !important;
       display: block !important;
     }
