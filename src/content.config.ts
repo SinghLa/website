@@ -30,7 +30,8 @@ const workInProgress = defineCollection({
         coauthors: z.string().optional(),
         funding: z.string().optional(),
         note: z.string().optional(),
-        draft: z.boolean()
+        draft: z.boolean(),
+        links: z.string().optional(),
     })
 });
 
