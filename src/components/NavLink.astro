@@ -10,8 +10,9 @@ const isActive = href === pathname || href === pathname.replace(/\/$/, '');
 
 const hrefString = typeof href === 'string' ? href : href?.toString() || '';
 const isExternal = hrefString.startsWith('http://') || hrefString.startsWith('https://');
+const isPdf = hrefString.endsWith('.pdf');
 
-const externalProps = isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+const externalProps = isExternal || isPdf ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 
 <a class:list={[className, { 'underline underline-offset-2 decoration-1': isActive }]} href={href} {...externalProps} {...props}>
