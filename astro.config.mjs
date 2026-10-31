@@ -8,6 +8,9 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     site: 'https://www.lachisingh.com',
     integrations: [mdx(), sitemap(), react()],
+    redirects: {
+        '/projects': '/research'
+    },
     vite: {
         plugins: [tailwindcss()]
     }

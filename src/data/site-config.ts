@@ -41,7 +41,7 @@ const siteConfig: SiteConfig = {
     subtitle: 'PhD candidate, Department of Economics, London School of Economics and Political Science',
     description: 'PhD student at LSE in the Dept. of Economics',
     image: {
-        src: '/lachi-portrait.jpeg',
+        src: '/lachi-portrait-2026.jpg',
         alt: 'Portrait of Lachi Singh'
     },
     headerNavLinks: [
@@ -50,8 +50,8 @@ const siteConfig: SiteConfig = {
             href: '/'
         },
         {
-            text: 'Projects',
-            href: '/projects'
+            text: 'Research',
+            href: '/research'
         },
         {
             text: 'Teaching',
@@ -75,8 +75,9 @@ const siteConfig: SiteConfig = {
     ],
     hero: {
         image: {
-            src: '/lachi-portrait.jpeg',
-            alt: 'Lachi Singh'
+            src: '/lachi-portrait-2026.jpg',
+            alt: 'Lachi Singh',
+            caption: 'I am on the 2026/27 job market.'
         },
         actions: [
             {
