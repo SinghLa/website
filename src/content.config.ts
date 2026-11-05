@@ -44,7 +44,8 @@ const workingPaper = defineCollection({
         funding: z.string().optional(),
         links: z.string().optional(),
         note: z.string().optional(),
-        draft: z.boolean()
+        draft: z.boolean(),
+        jobMarketPaper: z.boolean().optional()
     })
 });
 

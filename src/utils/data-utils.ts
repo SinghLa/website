@@ -9,7 +9,7 @@ export async function getAllProjects() {
 
     return {
         workInProgress: workInProgress.filter((p) => !p.data.draft),
-        workingPaper: workingPaper.filter((p) => !p.data.draft),
+        workingPaper: workingPaper.filter((p) => !p.data.draft).sort((a, b) => Number(!!b.data.jobMarketPaper) - Number(!!a.data.jobMarketPaper)),
         published: published.filter((p) => !p.data.draft)
     };
 }

@@ -7,6 +7,7 @@ type Props = { project: ProjectEntry };
 
 const { project } = Astro.props;
 const { title, abstract, coauthors, funding, links, note } = project.data;
+const isJobMarketPaper = 'jobMarketPaper' in project.data && project.data.jobMarketPaper;
 ---
 
 <div>
@@ -15,6 +16,8 @@ const { title, abstract, coauthors, funding, links, note } = project.data;
         group-hover:decoration-1 sm:text-2xl text-accent dark:text-accent-200"
     >
         {title}
+        {isJobMarketPaper && ' '}
+        {isJobMarketPaper && <span class="whitespace-nowrap">(Job Market Paper)</span>}
     </h2>
     {
         coauthors && (
