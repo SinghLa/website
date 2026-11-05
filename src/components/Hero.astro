@@ -11,7 +11,14 @@ const hero = siteConfig.hero;
             <div class="shrink-0 flex flex-col gap-6 w-full max-w-[300px] md:w-64 lg:w-[300px]">
                 {hero.image?.src && (
                     <figure>
-                        <img class="w-full aspect-square object-cover" src={hero.image.src} loading="lazy" decoding="async" alt={hero.image.alt || ''} />
+                        <img
+                            class="w-full aspect-square object-cover"
+                            src={hero.image.src}
+                            loading="eager"
+                            fetchpriority="high"
+                            decoding="async"
+                            alt={hero.image.alt || ''}
+                        />
                     </figure>
                 )}
                 {hero.actions && hero.actions.length > 0 && (
@@ -25,26 +32,28 @@ const hero = siteConfig.hero;
                 )}
             </div>
             <div class="flex flex-col gap-6 min-w-0">
-                {hero.image?.caption && <p class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>}
+                {hero.image?.caption && (
+                    <p class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>
+                )}
                 <div class="max-w-none prose prose-dante sm:prose-lg">
                     <p>
                         I am an applied economist working at the intersection of development and labour focusing on informal labour markets. I also work on
                         topics in environmental economics.
                     </p>
                     <p>
-                        I am affiliated with STICERD, CEP (Labor Programme) and{' '}
+                        I am affiliated with STICERD, CEP (Labour Programme) and{' '}
                         <a href="https://cssh.northeastern.edu/gap/" target="_blank" referrerpolicy="no-referrer">
                             Global Action for Policy (GAP) Initiative
                         </a>
                         , Northeastern University.
                     </p>
                     <p>
-                        Originally from India, I hold a BA. (Hons.) in Economics from Miranda House (University of Delhi) and an MA in International and
+                        Originally from India, I hold a BA (Hons) in Economics from Miranda House (University of Delhi) and an MA in International and
                         Development Economics from{' '}
                         <a href="https://economics.yale.edu/international-and-development-economics" target="_blank" referrerpolicy="no-referrer">
                             Yale University.
                         </a>{' '}
-                        I was previously a pre-doctoral fellow at Tobin Centre for Economic Policy at Yale University.
+                        I was previously a pre-doctoral fellow at the Tobin Center for Economic Policy at Yale University.
                     </p>{' '}
                 </div>
             </div>
