@@ -12,7 +12,7 @@ const hero = siteConfig.hero;
                 {hero.image?.src && (
                     <figure>
                         <img
-                            class="w-full aspect-square object-cover"
+                            class="w-full aspect-square object-cover rounded-full"
                             src={hero.image.src}
                             loading="eager"
                             fetchpriority="high"
@@ -21,6 +21,10 @@ const hero = siteConfig.hero;
                         />
                     </figure>
                 )}
+                <div>
+                    <p class="text-2xl leading-tight font-serif font-medium sm:text-3xl">{siteConfig.title}</p>
+                    <p class="text-sm leading-tight mt-1">PhD candidate, LSE</p>
+                </div>
                 {hero.actions && hero.actions.length > 0 && (
                     <div class="flex flex-wrap gap-4">
                         {hero.actions.map((action) => (
@@ -32,30 +36,36 @@ const hero = siteConfig.hero;
                 )}
             </div>
             <div class="flex flex-col gap-6 min-w-0">
-                {hero.image?.caption && (
-                    <p class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>
-                )}
+                <h1 class="text-2xl leading-tight font-serif italic sm:text-4xl text-accent dark:text-accent-200">Hi, I’m Lachi!</h1>
                 <div class="max-w-none prose prose-dante sm:prose-lg">
                     <p>
-                        I am an applied economist working at the intersection of development and labour focusing on informal labour markets. I also work on
-                        topics in environmental economics.
+                        I am a PhD candidate in the Department of Economics at London School of Economics (LSE). My main fields are development, labour and
+                        environmental economics.
                     </p>
                     <p>
-                        I am affiliated with STICERD, CEP (Labour Programme) and{' '}
+                        I am studying informal labour markets in developing countries, trying to understand
+                        workers’ relocation preferences under formalization policies, and figuring out ways for adaptation to reduce exposure to extreme weather
+                        events. Creating new structured data to answer challenging questions is something I find exciting.
+                    </p>
+                    <p>
+                        I am affiliated with STICERD, CEP (Labour Programme), Economics of Environment and Energy (EEE) and the{' '}
                         <a href="https://cssh.northeastern.edu/gap/" target="_blank" referrerpolicy="no-referrer">
                             Global Action for Policy (GAP) Initiative
                         </a>
                         , Northeastern University.
                     </p>
                     <p>
-                        Originally from India, I hold a BA (Hons) in Economics from Miranda House (University of Delhi) and an MA in International and
-                        Development Economics from{' '}
+                        I am originally from Ranchi, a city in Jharkhand, India. I hold a BA (Hons) in Economics from Miranda House (University of Delhi) and an MA
+                        in International and Development Economics from{' '}
                         <a href="https://economics.yale.edu/international-and-development-economics" target="_blank" referrerpolicy="no-referrer">
                             Yale University.
                         </a>{' '}
                         I was previously a pre-doctoral fellow at the Tobin Center for Economic Policy at Yale University.
                     </p>{' '}
                 </div>
+                {hero.image?.caption && (
+                    <p class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>
+                )}
             </div>
         </section>
     )
