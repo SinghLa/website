@@ -63,10 +63,10 @@ const navLinks = siteConfig.headerNavLinks || [];
 
         const activeClasses = ['underline', 'underline-offset-2', 'decoration-1'];
         const update = () => {
+            const navBottom = document.querySelector('nav')?.getBoundingClientRect().bottom ?? 0;
             let current = '/';
             for (const section of sections) {
-                const landing = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
-                if (section.getBoundingClientRect().top <= landing + 40) current = `/#${section.id}`;
+                if (section.getBoundingClientRect().top <= navBottom + 40) current = `/#${section.id}`;
             }
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
                 current = `/#${sections[sections.length - 1].id}`;
