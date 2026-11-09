@@ -82,7 +82,7 @@ const siteConfig: SiteConfig = {
         image: {
             src: '/lachi-portrait-2026.jpg',
             alt: 'Lachi Singh',
-            caption: 'I am on the 2026-27 job market looking for roles outside academia.'
+            caption: 'I am on the 2026-27 job market.'
         },
         actions: [
             {
