@@ -6,7 +6,7 @@ import siteConfig from '../data/site-config';
 const navLinks = siteConfig.headerNavLinks || [];
 ---
 
-<nav class="min-h-10 pt-4 pb-12 relative sm:min-h-14 sm:pb-24 md:pt-8">
+<nav class="sticky top-0 z-20 bg-surface min-h-10 py-4 mb-8 sm:min-h-14 sm:mb-16 md:py-6">
     {
         navLinks.length > 0 && (
             <div class="w-full max-w-6xl mx-auto relative">
@@ -16,6 +16,7 @@ const navLinks = siteConfig.headerNavLinks || [];
                             <NavLink
                                 class="font-serif text-main hover:underline hover:underline-offset-2 hover:decoration-1"
                                 href={link.href}
+                                data-nav-link={link.href}
                             >
                                 {link.text}
                             </NavLink>
@@ -25,7 +26,59 @@ const navLinks = siteConfig.headerNavLinks || [];
             </div>
         )
     }
-    <div class="absolute right-0 top-4 z-10 md:top-8">
+    <div class="absolute right-0 top-4 z-10 md:top-6">
         <ThemeToggle />
     </div>
 </nav>
+
+<script>
+    // On the one-page homepage, underline the menu item for the section in view.
+    function setupSectionHighlight() {
+        const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')];
+        const sections = [...document.querySelectorAll<HTMLElement>('[data-nav-section]')];
+        if (window.location.pathname !== '/' || sections.length === 0) return;
+
+        // Jump to sections ourselves; the page-transition router stops these scrolls short.
+        const scrollToSection = (id: string, behavior: ScrollBehavior) => {
+            const target = id ? document.getElementById(id) : null;
+            if (target) target.scrollIntoView({ behavior });
+            else window.scrollTo({ top: 0, behavior });
+        };
+        for (const link of links) {
+            const href = link.dataset.navLink || '';
+            if (href !== '/' && !href.startsWith('/#')) continue;
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const id = href.startsWith('/#') ? href.slice(2) : '';
+                history.pushState(null, '', id ? `/#${id}` : '/');
+                scrollToSection(id, 'smooth');
+            });
+        }
+        // Arriving with a section in the address (for example from the old /research link).
+        const initialId = window.location.hash.slice(1);
+        if (initialId && document.getElementById(initialId)) {
+            requestAnimationFrame(() => scrollToSection(initialId, 'instant'));
+            window.addEventListener('load', () => scrollToSection(initialId, 'instant'), { once: true });
+        }
+
+        const activeClasses = ['underline', 'underline-offset-2', 'decoration-1'];
+        const update = () => {
+            const navBottom = document.querySelector('nav')?.getBoundingClientRect().bottom ?? 0;
+            let current = '/';
+            for (const section of sections) {
+                if (section.getBoundingClientRect().top <= navBottom + 40) current = `/#${section.id}`;
+            }
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+                current = `/#${sections[sections.length - 1].id}`;
+            }
+            for (const link of links) {
+                const on = link.dataset.navLink === current;
+                activeClasses.forEach((c) => link.classList.toggle(c, on));
+            }
+        };
+        update();
+        window.addEventListener('scroll', update, { passive: true });
+        document.addEventListener('astro:before-swap', () => window.removeEventListener('scroll', update), { once: true });
+    }
+    document.addEventListener('astro:page-load', setupSectionHighlight);
+</script>

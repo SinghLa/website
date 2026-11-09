@@ -1,9 +1,14 @@
 ---
 import Hero from '../components/Hero.astro';
+import ResearchSection from '../components/ResearchSection.astro';
+import TeachingSection from '../components/TeachingSection.astro';
 import siteConfig from '../data/site-config';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout description={siteConfig.description} image={siteConfig.image} showHeader={false}>
-    <Hero />
+    <Hero>
+        <ResearchSection />
+        <TeachingSection />
+    </Hero>
 </BaseLayout>

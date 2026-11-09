@@ -9,7 +9,9 @@ export default defineConfig({
     site: 'https://www.lachisingh.com',
     integrations: [mdx(), sitemap(), react()],
     redirects: {
-        '/projects': '/research'
+        '/projects': '/#research',
+        '/research': '/#research',
+        '/teaching': '/#teaching'
     },
     vite: {
         plugins: [tailwindcss()]

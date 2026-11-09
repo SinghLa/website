@@ -51,11 +51,11 @@ const siteConfig: SiteConfig = {
         },
         {
             text: 'Research',
-            href: '/research'
+            href: '/#research'
         },
         {
             text: 'Teaching',
-            href: '/teaching'
+            href: '/#teaching'
         },
         {
             text: 'CV',

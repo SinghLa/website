@@ -1,6 +1,4 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-
 type Course = { title: string; href: string; role: string; description?: string };
 
 const courseGuides = 'https://www.lse.ac.uk/resources/calendar/courseGuides/EC';
@@ -31,23 +29,21 @@ const courses: Course[] = [
 ];
 ---
 
-<BaseLayout title="Teaching" description="These are all the courses I have taught" showHeader={false}>
-    <div class="mb-16 sm:mb-24">
-        <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Teaching</h1>
+<section id="teaching" class="scroll-mt-24 mb-16 sm:mb-24" data-nav-section>
+        <h2 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Teaching</h2>
         <ul class="flex flex-col gap-8">
             {
                 courses.map((course) => (
                     <li>
-                        <h2 class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">
+                        <h3 class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">
                             <a class="underline decoration-1 underline-offset-4" href={course.href} target="_blank" rel="noopener noreferrer">
                                 {course.title}
                             </a>
-                        </h2>
+                        </h3>
                         <p class="py-2 text-sm italic">{course.role}</p>
                         {course.description && <p class="max-w-3xl text-sm leading-normal text-justify">{course.description}</p>}
                     </li>
                 ))
             }
         </ul>
-    </div>
-</BaseLayout>
+</section>

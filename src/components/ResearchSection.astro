@@ -1,16 +1,16 @@
 ---
-import ProjectItem from '../../components/ProjectItem.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllProjects } from '../../utils/data-utils';
+import ProjectItem from './ProjectItem.astro';
+import { getAllProjects } from '../utils/data-utils';
 
 const { published, workingPaper, workInProgress } = await getAllProjects();
+const headingClass = 'mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl';
 ---
 
-<BaseLayout title="Research" description="My research: publications, working papers and work in progress" image={{ src: '/lachi-portrait-2026.jpg', alt: 'Lachi Singh' }} showHeader={false}>
+<section id="research" class="scroll-mt-24 mb-16 sm:mb-24" data-nav-section>
     {
         published.length > 0 && (
-            <div>
-                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Publications</h1>
+            <div class="mb-16">
+                <h2 class={headingClass}>Publications</h2>
                 <ul class="flex flex-col gap-8">
                     {published.map((project) => (
                         <li>
@@ -24,7 +24,7 @@ const { published, workingPaper, workInProgress } = await getAllProjects();
     {
         workingPaper.length > 0 && (
             <div>
-                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Working Papers</h1>
+                <h2 class={headingClass}>Working Papers</h2>
                 <ul class="flex flex-col gap-8">
                     {workingPaper.map((project) => (
                         <li>
@@ -38,7 +38,7 @@ const { published, workingPaper, workInProgress } = await getAllProjects();
     {
         workInProgress.length > 0 && (
             <div class="mt-16">
-                <h1 class="mb-12 text-2xl leading-tight font-serif italic sm:mb-16 sm:text-4xl">Work In Progress</h1>
+                <h2 class={headingClass}>Work In Progress</h2>
                 <ul class="flex flex-col gap-8">
                     {workInProgress.map((project) => (
                         <li>
@@ -49,4 +49,4 @@ const { published, workingPaper, workInProgress } = await getAllProjects();
             </div>
         )
     }
-</BaseLayout>
+</section>
