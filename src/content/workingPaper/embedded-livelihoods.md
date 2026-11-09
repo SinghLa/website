@@ -7,4 +7,5 @@ links: |
 funding: supported by IGC, British Academy, Hub of Equal Representation (STICERD)
 coauthors: '[Muskan Jain](https://jainmuskan.com/)'
 draft: false
+comicStrip: true
 ---

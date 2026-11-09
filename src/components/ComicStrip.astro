@@ -1,0 +1,149 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+// Comic frames made for the British Academy Ideas Festival exhibition (also used on /ba-exhibition-2026).
+const modules = import.meta.glob<{ default: ImageMetadata }>('../assets/ba-exhibition-2026/*.jpg', { eager: true });
+const frame = (name: string) => modules[`../assets/ba-exhibition-2026/${name}.jpg`].default;
+
+const vendors = [
+    {
+        id: 'meena',
+        name: 'Meena',
+        role: 'Vegetable seller',
+        frames: [
+            ['meena_1', 'Meena at 4:30am, dressing in the dark before her workday begins'],
+            ['meena_2', 'Meena at the wholesale market'],
+            ['meena_3', 'Meena at her vending spot'],
+            ['meena_4', 'Meena in heavy rain'],
+            ['meena_5', 'Meena distress selling at the end of the day']
+        ]
+    },
+    {
+        id: 'raju',
+        name: 'Raju',
+        role: 'Street food stall',
+        frames: [
+            ['raju_1', 'Raju preparing litti-chokha'],
+            ['raju_2', 'Raju setting up his cart'],
+            ['raju_3', 'Evening rush at Raju’s stall'],
+            ['raju_4', 'An eviction drive at Raju’s stall'],
+            ['raju_5', 'Raju at night beside his packed cart']
+        ]
+    },
+    {
+        id: 'suresh',
+        name: 'Suresh',
+        role: 'Fruit seller',
+        frames: [
+            ['suresh_1', 'Suresh waking at 4am'],
+            ['suresh_2', 'Suresh with his supplier at the wholesale market'],
+            ['suresh_3', 'Suresh arranging fruit'],
+            ['suresh_4', 'Arun arrives at Suresh’s stall'],
+            ['suresh_5', 'Suresh and Arun packing up at dusk']
+        ]
+    }
+];
+---
+
+<div class="mt-6 max-w-3xl" data-comic-strip>
+    <p class="text-sm italic">A day in the life, from our British Academy Ideas Festival exhibition</p>
+    <div class="mt-2 flex items-center justify-between gap-4">
+        <div role="tablist" aria-label="Choose a vendor" class="flex flex-wrap gap-x-4 gap-y-1">
+            {
+                vendors.map((vendor, i) => (
+                    <button
+                        type="button"
+                        role="tab"
+                        id={`comic-tab-${vendor.id}`}
+                        aria-controls={`comic-panel-${vendor.id}`}
+                        aria-selected={i === 0 ? 'true' : 'false'}
+                        tabindex={i === 0 ? 0 : -1}
+                        data-comic-tab={vendor.id}
+                        class="font-serif text-base hover:underline hover:underline-offset-4 aria-selected:underline aria-selected:underline-offset-4 aria-selected:text-accent dark:aria-selected:text-accent-200"
+                    >
+                        {vendor.name}
+                    </button>
+                ))
+            }
+        </div>
+        <div class="flex shrink-0 gap-2">
+            <button type="button" data-comic-step="-1" aria-label="Previous frame" class="w-8 h-8 flex items-center justify-center border border-main rounded-full hover:bg-muted">
+                ‹
+            </button>
+            <button type="button" data-comic-step="1" aria-label="Next frame" class="w-8 h-8 flex items-center justify-center border border-main rounded-full hover:bg-muted">
+                ›
+            </button>
+        </div>
+    </div>
+    {
+        vendors.map((vendor, i) => (
+            <div id={`comic-panel-${vendor.id}`} role="tabpanel" aria-labelledby={`comic-tab-${vendor.id}`} data-comic-panel={vendor.id} hidden={i !== 0} class="mt-3">
+                <p class="text-xs italic mb-2">
+                    {vendor.name}, {vendor.role.toLowerCase()}
+                </p>
+                <ul class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2" data-comic-track aria-label={`${vendor.name}’s day, five frames`}>
+                    {vendor.frames.map(([name, alt]) => (
+                        <li class="snap-start shrink-0 w-[85%] sm:w-[360px]">
+                            <Image
+                                src={frame(name)}
+                                alt={alt}
+                                widths={[480, 720]}
+                                sizes="(min-width: 640px) 360px, 85vw"
+                                format="webp"
+                                quality={75}
+                                loading="lazy"
+                                decoding="async"
+                                class="w-full h-auto aspect-video object-cover"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        ))
+    }
+    <p class="mt-1 text-xs italic">
+        Meena, Raju and Suresh are fictional characters created to illustrate findings from real survey data. Illustrations by Nikkhil Nair.
+    </p>
+</div>
+
+<script>
+    function setupComicStrips() {
+        document.querySelectorAll<HTMLElement>('[data-comic-strip]').forEach((strip) => {
+            if (strip.dataset.ready) return;
+            strip.dataset.ready = 'true';
+            const tabs = [...strip.querySelectorAll<HTMLButtonElement>('[data-comic-tab]')];
+            const panels = [...strip.querySelectorAll<HTMLElement>('[data-comic-panel]')];
+            const select = (id: string) => {
+                tabs.forEach((tab) => {
+                    const on = tab.dataset.comicTab === id;
+                    tab.setAttribute('aria-selected', on ? 'true' : 'false');
+                    tab.tabIndex = on ? 0 : -1;
+                });
+                panels.forEach((panel) => {
+                    panel.hidden = panel.dataset.comicPanel !== id;
+                    const track = panel.querySelector<HTMLElement>('[data-comic-track]');
+                    if (track) track.scrollLeft = 0;
+                });
+            };
+            tabs.forEach((tab, i) => {
+                tab.addEventListener('click', () => select(tab.dataset.comicTab || ''));
+                tab.addEventListener('keydown', (event) => {
+                    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+                    const next = tabs[(i + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+                    select(next.dataset.comicTab || '');
+                    next.focus();
+                });
+            });
+            strip.querySelectorAll<HTMLButtonElement>('[data-comic-step]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const track = panels.find((panel) => !panel.hidden)?.querySelector<HTMLElement>('[data-comic-track]');
+                    const first = track?.firstElementChild as HTMLElement | null;
+                    if (!track || !first) return;
+                    track.scrollBy({ left: Number(button.dataset.comicStep) * (first.offsetWidth + 12), behavior: 'smooth' });
+                });
+            });
+        });
+    }
+    document.addEventListener('astro:page-load', setupComicStrips);
+</script>

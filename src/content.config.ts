@@ -45,7 +45,8 @@ const workingPaper = defineCollection({
         links: z.string().optional(),
         note: z.string().optional(),
         draft: z.boolean(),
-        jobMarketPaper: z.boolean().optional()
+        jobMarketPaper: z.boolean().optional(),
+        comicStrip: z.boolean().optional()
     })
 });
 
