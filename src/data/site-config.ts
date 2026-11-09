@@ -2,6 +2,8 @@ export type Image = {
     src: string;
     alt?: string;
     caption?: string;
+    width?: number;
+    height?: number;
 };
 
 export type Link = {
@@ -38,11 +40,14 @@ export type SiteConfig = {
 
 const siteConfig: SiteConfig = {
     title: 'Lachi Singh',
-    subtitle: 'PhD candidate, Department of Economics, London School of Economics and Political Science',
-    description: 'PhD student at LSE in the Dept. of Economics',
+    subtitle: 'PhD Candidate in Economics, LSE',
+    description:
+        'Applied economist and PhD candidate at LSE working on development, labour and environmental economics.',
     image: {
-        src: '/lachi-portrait-2026.jpg',
-        alt: 'Portrait of Lachi Singh'
+        src: '/og-image.jpg',
+        alt: 'Lachi Singh, PhD Candidate in Economics at the London School of Economics',
+        width: 1200,
+        height: 630
     },
     headerNavLinks: [
         {

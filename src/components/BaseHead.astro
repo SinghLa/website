@@ -5,16 +5,18 @@ import '../styles/global.css';
 export type Props = {
     title?: string;
     description?: string;
-    image?: { src: string; alt?: string };
+    image?: { src: string; alt?: string; width?: number; height?: number };
     pageType?: 'website' | 'article';
 };
 
 const { description = '', image = siteConfig.image, pageType = 'website' } = Astro.props;
-const title = [Astro.props.title, siteConfig.title].filter(Boolean).join(' | ');
+const title = Astro.props.title ? `${Astro.props.title} | ${siteConfig.title}` : [siteConfig.title, siteConfig.subtitle].filter(Boolean).join(' | ');
 const resolvedImage = image?.src
     ? {
           src: new URL(image.src, Astro.site).toString(),
-          alt: image.alt
+          alt: image.alt,
+          width: image.width,
+          height: image.height
       }
     : undefined;
 const canonicalURL = new URL(Astro.request.url, Astro.site);
@@ -59,20 +61,27 @@ function formatCanonicalURL(url: string | URL) {
 <link rel="canonical" href={formatCanonicalURL(canonicalURL)} />
 <meta name="description" content={description} />
 
-<!-- Open Graph / Facebook -->
+<!-- Open Graph (LinkedIn, Facebook, WhatsApp, Slack and others) -->
+<meta property="og:site_name" content={siteConfig.title} />
+<meta property="og:locale" content="en_GB" />
 <meta property="og:type" content={pageType} />
 <meta property="og:url" content={formatCanonicalURL(canonicalURL)} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 {resolvedImage?.src && <meta property="og:image" content={resolvedImage.src} />}
+{resolvedImage?.src && resolvedImage.src.endsWith('.jpg') && <meta property="og:image:type" content="image/jpeg" />}
+{resolvedImage?.width && <meta property="og:image:width" content={String(resolvedImage.width)} />}
+{resolvedImage?.height && <meta property="og:image:height" content={String(resolvedImage.height)} />}
 {resolvedImage?.alt && <meta property="og:image:alt" content={resolvedImage.alt} />}
 
 <!-- X/Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={formatCanonicalURL(canonicalURL)} />
-<meta property="twitter:title" content={title} />
-<meta property="twitter:description" content={description} />
-{resolvedImage?.src && <meta property="twitter:image" content={resolvedImage.src} />}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@LachiSingh" />
+<meta name="twitter:creator" content="@LachiSingh" />
+<meta name="twitter:url" content={formatCanonicalURL(canonicalURL)} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{resolvedImage?.src && <meta name="twitter:image" content={resolvedImage.src} />}
 {resolvedImage?.alt && <meta name="twitter:image:alt" content={resolvedImage?.alt} />}
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="c33895de-6a43-44d6-b90b-70e62194276c"></script>
