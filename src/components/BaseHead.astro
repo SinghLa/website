@@ -7,9 +7,11 @@ export type Props = {
     description?: string;
     image?: { src: string; alt?: string; width?: number; height?: number };
     pageType?: 'website' | 'article';
+    /** Schema.org JSON-LD for search engines, rendered as-is in the page head. */
+    structuredData?: Record<string, unknown>;
 };
 
-const { description = '', image = siteConfig.image, pageType = 'website' } = Astro.props;
+const { description = '', image = siteConfig.image, pageType = 'website', structuredData } = Astro.props;
 const title = Astro.props.title ? `${Astro.props.title} | ${siteConfig.title}` : [siteConfig.title, siteConfig.subtitle].filter(Boolean).join(' | ');
 const resolvedImage = image?.src
     ? {
@@ -83,5 +85,8 @@ function formatCanonicalURL(url: string | URL) {
 <meta name="twitter:description" content={description} />
 {resolvedImage?.src && <meta name="twitter:image" content={resolvedImage.src} />}
 {resolvedImage?.alt && <meta name="twitter:image:alt" content={resolvedImage?.alt} />}
+
+<!-- Structured data (schema.org) -->
+{structuredData && <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />}
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="c33895de-6a43-44d6-b90b-70e62194276c"></script>

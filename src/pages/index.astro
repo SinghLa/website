@@ -4,9 +4,61 @@ import ResearchSection from '../components/ResearchSection.astro';
 import TeachingSection from '../components/TeachingSection.astro';
 import siteConfig from '../data/site-config';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const site = (Astro.site?.toString() ?? 'https://www.lachisingh.com/').replace(/\/$/, '');
+const personId = `${site}/#person`;
+
+// Schema.org description of the site and its owner, for search engines.
+const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'WebSite',
+            '@id': `${site}/#website`,
+            url: `${site}/`,
+            name: siteConfig.title,
+            inLanguage: 'en-GB',
+            publisher: { '@id': personId }
+        },
+        {
+            '@type': 'ProfilePage',
+            '@id': `${site}/#profile`,
+            url: `${site}/`,
+            name: `${siteConfig.title} | ${siteConfig.subtitle}`,
+            isPartOf: { '@id': `${site}/#website` },
+            mainEntity: { '@id': personId }
+        },
+        {
+            '@type': 'Person',
+            '@id': personId,
+            name: 'Lachi Singh',
+            url: `${site}/`,
+            image: `${site}/lachi-portrait-2026.jpg`,
+            jobTitle: 'PhD Candidate in Economics',
+            description: siteConfig.description,
+            email: 'mailto:l.singh7@lse.ac.uk',
+            affiliation: [
+                { '@type': 'CollegeOrUniversity', name: 'London School of Economics and Political Science', url: 'https://www.lse.ac.uk/' },
+                { '@type': 'ResearchOrganization', name: 'STICERD', url: 'https://sticerd.lse.ac.uk/' },
+                { '@type': 'ResearchOrganization', name: 'Centre for Economic Performance (CEP)', url: 'https://cep.lse.ac.uk/' },
+                {
+                    '@type': 'ResearchOrganization',
+                    name: 'Global Action for Policy (GAP) Initiative, Northeastern University',
+                    url: 'https://cssh.northeastern.edu/gap/'
+                }
+            ],
+            alumniOf: [
+                { '@type': 'CollegeOrUniversity', name: 'Yale University', url: 'https://www.yale.edu/' },
+                { '@type': 'CollegeOrUniversity', name: 'Miranda House, University of Delhi', url: 'https://www.mirandahouse.ac.in/' }
+            ],
+            knowsAbout: ['Development economics', 'Labour economics', 'Environmental economics', 'Informal labour markets', 'Street vending'],
+            sameAs: (siteConfig.socialLinks ?? []).map((link) => link.href)
+        }
+    ]
+};
 ---
 
-<BaseLayout description={siteConfig.description} image={siteConfig.image} showHeader={false}>
+<BaseLayout description={siteConfig.description} image={siteConfig.image} structuredData={structuredData} showHeader={false}>
     <Hero>
         <ResearchSection />
         <TeachingSection />
