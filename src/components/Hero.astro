@@ -43,7 +43,7 @@ const hero = siteConfig.hero;
             </div>
             <div class="flex flex-col min-w-0 flex-1">
                 <div class="flex flex-col gap-6 mb-16 sm:mb-24">
-                <h1 class="text-2xl leading-tight font-serif italic sm:text-4xl text-accent dark:text-accent-200">Hi, I’m Lachi!</h1>
+                <h1 class="max-md:order-first text-2xl leading-tight font-serif italic sm:text-4xl text-accent dark:text-accent-200">Hi, I’m Lachi!</h1>
                 <div class="max-w-none prose prose-dante sm:prose-lg">
                     <p>
                         I am a PhD candidate in Economics at the London School of Economics (LSE). I work in development, labour and environmental economics.
@@ -70,7 +70,7 @@ const hero = siteConfig.hero;
                     </p>
                 </div>
                 {hero.image?.caption && (
-                    <p class="text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>
+                    <p class="max-md:order-first text-xl leading-tight font-serif font-semibold sm:text-2xl text-accent dark:text-accent-200">{hero.image.caption}</p>
                 )}
                 </div>
                 <slot />
